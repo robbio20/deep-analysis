@@ -18,7 +18,9 @@
   .version{font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:2px;}
   @keyframes glitch{0%,100%{text-shadow:0 0 30px rgba(0,255,157,0.4);}20%{text-shadow:-2px 0 rgba(255,62,108,0.8),2px 0 rgba(0,255,157,0.8);}60%{text-shadow:2px 0 rgba(77,159,255,0.8),-2px 0 rgba(0,255,157,0.6);}}
   .main{display:grid;grid-template-columns:minmax(300px,2fr) minmax(340px,3fr);gap:clamp(16px,2vw,28px);padding:24px 0 20px;}
-  .drop-zone{border:1px dashed var(--muted);border-radius:4px;padding:40px 24px;text-align:center;cursor:pointer;transition:all 0.3s;background:rgba(13,17,23,0.8);position:relative;overflow:hidden;min-height:220px;max-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  /* image-area: altezza fissa così dropzone e preview hanno la stessa dimensione */
+  .image-area{flex:1;display:flex;flex-direction:column;gap:12px;position:relative;}
+  .drop-zone{border:1px dashed var(--muted);border-radius:4px;padding:40px 24px;text-align:center;cursor:pointer;transition:all 0.3s;background:rgba(13,17,23,0.8);position:relative;overflow:hidden;height:clamp(300px,38vh,460px);display:flex;flex-direction:column;align-items:center;justify-content:center;}
   .drop-zone::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,255,157,0.04) 0%,transparent 70%);opacity:0;transition:opacity 0.3s;}
   .drop-zone:hover,.drop-zone.dragging{border-color:var(--accent);box-shadow:0 0 30px rgba(0,255,157,0.08),inset 0 0 30px rgba(0,255,157,0.03);}
   .drop-zone:hover::before,.drop-zone.dragging::before{opacity:1;}
@@ -27,8 +29,12 @@
   .drop-text-main{font-size:0.88rem;color:var(--text);margin-bottom:6px;}
   .drop-text-sub{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--muted);letter-spacing:1px;}
   #fileInput{display:none;}
-  .preview-wrap{position:relative;width:100%;border-radius:4px;overflow:hidden;display:none;}
-  .preview-img{width:100%;height:100%;min-height:220px;max-height:420px;object-fit:contain;background:#000;display:block;}
+  .preview-wrap{position:relative;width:100%;border-radius:4px;overflow:hidden;display:none;height:clamp(300px,38vh,460px);}
+  .preview-img{width:100%;height:100%;object-fit:contain;background:#000;display:block;}
+  /* overlay drag-and-drop anche quando l'immagine è già caricata */
+  .drop-overlay{position:absolute;inset:0;z-index:10;display:none;align-items:center;justify-content:center;background:rgba(0,255,157,0.08);border:2px dashed var(--accent);border-radius:4px;pointer-events:none;}
+  .drop-overlay.active{display:flex;}
+  .drop-overlay-text{font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:var(--accent);letter-spacing:3px;text-shadow:0 0 20px var(--accent);}
   .preview-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.85));padding:20px 16px 12px;}
   .preview-filename{font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:var(--accent);letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .scan-lines{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,157,0.012) 2px,rgba(0,255,157,0.012) 4px);pointer-events:none;animation:scanMove 8s linear infinite;opacity:0;transition:opacity 0.5s;}
@@ -172,14 +178,17 @@
         </button>
       </div>
 
-      <!-- Area immagine -->
-      <div class="image-area">
+      <!-- Area immagine: il drag funziona sempre, anche sopra la preview -->
+      <div class="image-area" id="imageArea">
+        <div class="drop-overlay" id="dropOverlay">
+          <div class="drop-overlay-text">&#8595; RILASCIA L'IMMAGINE</div>
+        </div>
         <div id="dropZone" class="drop-zone" onclick="document.getElementById('fileInput').click()">
           <div class="drop-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00ff9d" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
           </div>
           <div class="drop-text-main">Trascina o carica un'immagine</div>
-          <div class="drop-text-sub" style="margin-top:6px">JPG · PNG · WEBP · GIF · BMP — MAX 20MB</div>
+          <div class="drop-text-sub" style="margin-top:6px">JPG &middot; PNG &middot; WEBP &middot; GIF &middot; BMP &mdash; MAX 20MB</div>
         </div>
         <div id="previewWrap" class="preview-wrap">
           <img id="previewImg" class="preview-img" alt="preview">
@@ -273,9 +282,25 @@ let lastResults=null,analysisDate=null,fileSHA256=null;
 
 const dropZone=document.getElementById('dropZone');
 const fileInput=document.getElementById('fileInput');
+const imageArea=document.getElementById('imageArea');
+const dropOverlay=document.getElementById('dropOverlay');
+
+// Drag sul dropZone (quando non c'è immagine)
 dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('dragging');});
-dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('dragging'));
+dropZone.addEventListener('dragleave',e=>{if(!dropZone.contains(e.relatedTarget))dropZone.classList.remove('dragging');});
 dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('dragging');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadFile(f);});
+
+// Drag sull'intera imageArea (funziona anche con preview visibile)
+imageArea.addEventListener('dragover',e=>{e.preventDefault();dropOverlay.classList.add('active');});
+imageArea.addEventListener('dragleave',e=>{if(!imageArea.contains(e.relatedTarget))dropOverlay.classList.remove('active');});
+imageArea.addEventListener('drop',e=>{
+  e.preventDefault();
+  dropOverlay.classList.remove('active');
+  dropZone.classList.remove('dragging');
+  const f=e.dataTransfer.files[0];
+  if(f&&f.type.startsWith('image/'))loadFile(f);
+});
+
 fileInput.addEventListener('change',e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
 
 function loadFile(file){
@@ -329,6 +354,7 @@ function changeImage(){
   document.getElementById('previewWrap').classList.remove('scanning');
   document.getElementById('previewWrap').style.display='none';
   document.getElementById('dropZone').style.display='flex';
+  document.getElementById('dropOverlay').classList.remove('active');
   document.getElementById('btnAnalyze').disabled=true;
   document.getElementById('btnChange').disabled=true;
   document.getElementById('btnPdf').disabled=true;
