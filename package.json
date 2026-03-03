@@ -1,0 +1,9 @@
+{
+  "name": "deep-analysis",
+  "version": "2.0.0",
+  "description": "Deep Analysis — AI Image Forensics Tool",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  }
+}
