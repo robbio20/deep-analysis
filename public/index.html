@@ -18,7 +18,7 @@
   .version{font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:2px;}
   @keyframes glitch{0%,100%{text-shadow:0 0 30px rgba(0,255,157,0.4);}20%{text-shadow:-2px 0 rgba(255,62,108,0.8),2px 0 rgba(0,255,157,0.8);}60%{text-shadow:2px 0 rgba(77,159,255,0.8),-2px 0 rgba(0,255,157,0.6);}}
   .main{display:grid;grid-template-columns:minmax(300px,2fr) minmax(340px,3fr);gap:clamp(16px,2vw,28px);padding:24px 0 20px;}
-  .drop-zone{border:1px dashed var(--muted);border-radius:4px;padding:40px 24px;text-align:center;cursor:pointer;transition:all 0.3s;background:rgba(13,17,23,0.8);position:relative;overflow:hidden;min-height:clamp(280px,35vh,480px);height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .drop-zone{border:1px dashed var(--muted);border-radius:4px;padding:40px 24px;text-align:center;cursor:pointer;transition:all 0.3s;background:rgba(13,17,23,0.8);position:relative;overflow:hidden;min-height:220px;max-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
   .drop-zone::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,255,157,0.04) 0%,transparent 70%);opacity:0;transition:opacity 0.3s;}
   .drop-zone:hover,.drop-zone.dragging{border-color:var(--accent);box-shadow:0 0 30px rgba(0,255,157,0.08),inset 0 0 30px rgba(0,255,157,0.03);}
   .drop-zone:hover::before,.drop-zone.dragging::before{opacity:1;}
@@ -27,8 +27,8 @@
   .drop-text-main{font-size:0.88rem;color:var(--text);margin-bottom:6px;}
   .drop-text-sub{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--muted);letter-spacing:1px;}
   #fileInput{display:none;}
-  .preview-wrap{position:relative;width:100%;min-height:clamp(280px,35vh,480px);border-radius:4px;overflow:hidden;display:none;}
-  .preview-img{width:100%;height:100%;min-height:clamp(280px,35vh,480px);object-fit:contain;background:#000;display:block;}
+  .preview-wrap{position:relative;width:100%;border-radius:4px;overflow:hidden;display:none;}
+  .preview-img{width:100%;height:100%;min-height:220px;max-height:420px;object-fit:contain;background:#000;display:block;}
   .preview-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.85));padding:20px 16px 12px;}
   .preview-filename{font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:var(--accent);letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .scan-lines{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,157,0.012) 2px,rgba(0,255,157,0.012) 4px);pointer-events:none;animation:scanMove 8s linear infinite;opacity:0;transition:opacity 0.5s;}
@@ -48,7 +48,10 @@
   .hash-label{font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--accent3);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
   .hash-val{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--accent);word-break:break-all;line-height:1.6;}
 
-  .action-bar{display:grid;grid-template-columns:1fr auto auto;gap:10px;margin-top:14px;align-items:stretch;}
+  /* PANNELLO SINISTRO: flex column con bottoni SEMPRE in cima */
+  .left-panel{display:flex;flex-direction:column;gap:12px;}
+  .action-bar{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:stretch;}
+  .image-area{flex:1;display:flex;flex-direction:column;gap:12px;}
   .btn-analyze{padding:14px 20px;background:transparent;border:1px solid var(--accent);color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:0.75rem;letter-spacing:3px;text-transform:uppercase;cursor:pointer;border-radius:4px;transition:all 0.3s;position:relative;overflow:hidden;}
   .btn-analyze::before{content:'';position:absolute;inset:0;background:var(--accent);transform:translateX(-100%);transition:transform 0.3s;z-index:0;}
   .btn-analyze:hover::before{transform:translateX(0);}
@@ -137,7 +140,7 @@
 
   @media(min-width:1400px){.modules-grid{grid-template-columns:repeat(4,1fr);}}
   @media(max-width:900px){.main{grid-template-columns:1fr;}.bottom-grid{grid-template-columns:1fr;}}
-  @media(max-width:600px){.action-bar{grid-template-columns:1fr 1fr;}.btn-analyze{grid-column:1/-1;}.modules-grid{grid-template-columns:1fr 1fr;}header{flex-direction:column;align-items:flex-start;gap:8px;}.version{display:none;}.logo-title{font-size:1.8rem;}.drop-zone,.preview-wrap,.preview-img{min-height:220px;}}
+  @media(max-width:600px){.action-bar{grid-template-columns:1fr auto auto;}.modules-grid{grid-template-columns:1fr 1fr;}header{flex-direction:column;align-items:flex-start;gap:8px;}.version{display:none;}.logo-title{font-size:1.8rem;}.btn-analyze span{font-size:0.62rem;letter-spacing:1px;}}
 </style>
 </head>
 <body>
@@ -154,34 +157,9 @@
   </header>
 
   <div class="main">
-    <!-- LEFT -->
-    <div>
-      <div id="dropZone" class="drop-zone" onclick="document.getElementById('fileInput').click()">
-        <div class="drop-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00ff9d" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        </div>
-        <div class="drop-text-main">Trascina o carica un'immagine</div>
-        <div class="drop-text-sub" style="margin-top:6px">JPG · PNG · WEBP · GIF · BMP — MAX 20MB</div>
-      </div>
-      <div id="previewWrap" class="preview-wrap">
-        <img id="previewImg" class="preview-img" alt="preview">
-        <div class="scan-lines"></div><div class="scan-beam"></div>
-        <div class="preview-overlay"><div class="preview-filename" id="previewFilename"></div></div>
-      </div>
-      <input type="file" id="fileInput" accept="image/*">
-
-      <!-- SHA256 box -->
-      <div class="hash-box" id="hashBox">
-        <div class="hash-label">SHA-256 // Impronta digitale file</div>
-        <div class="hash-val" id="hashVal">—</div>
-      </div>
-
-      <!-- ELA visual -->
-      <div class="ela-wrap" id="elaWrap">
-        <div class="ela-label">▸ Error Level Analysis — Mappa anomalie</div>
-        <canvas class="ela-canvas" id="elaDisplay"></canvas>
-      </div>
-
+    <!-- LEFT: bottoni SEMPRE in cima, immagine sotto -->
+    <div class="left-panel">
+      <!-- ACTION BAR fissa in cima -->
       <div class="action-bar">
         <button class="btn-analyze" id="btnAnalyze" disabled onclick="startAnalysis()">
           <span id="btnText">▶ AVVIA ANALISI FORENSE</span>
@@ -192,6 +170,35 @@
         <button class="btn-icon btn-pdf" id="btnPdf" onclick="downloadPDF()" disabled title="Scarica report PDF">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>PDF
         </button>
+      </div>
+
+      <!-- Area immagine -->
+      <div class="image-area">
+        <div id="dropZone" class="drop-zone" onclick="document.getElementById('fileInput').click()">
+          <div class="drop-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00ff9d" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+          <div class="drop-text-main">Trascina o carica un'immagine</div>
+          <div class="drop-text-sub" style="margin-top:6px">JPG · PNG · WEBP · GIF · BMP — MAX 20MB</div>
+        </div>
+        <div id="previewWrap" class="preview-wrap">
+          <img id="previewImg" class="preview-img" alt="preview">
+          <div class="scan-lines"></div><div class="scan-beam"></div>
+          <div class="preview-overlay"><div class="preview-filename" id="previewFilename"></div></div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*">
+
+        <!-- SHA256 box -->
+        <div class="hash-box" id="hashBox">
+          <div class="hash-label">SHA-256 // Impronta digitale file</div>
+          <div class="hash-val" id="hashVal">—</div>
+        </div>
+
+        <!-- ELA visual -->
+        <div class="ela-wrap" id="elaWrap">
+          <div class="ela-label">▸ Error Level Analysis — Mappa anomalie</div>
+          <canvas class="ela-canvas" id="elaDisplay"></canvas>
+        </div>
       </div>
     </div>
 
@@ -686,17 +693,52 @@ async function downloadPDF(){
   try{
     const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
     const W=210,M=18,cW=W-M*2;
+    const FOOTER_H=15; // spazio riservato al footer
+    const PAGE_H=297;
+    const CONTENT_BOTTOM=PAGE_H-FOOTER_H-4; // y massima per contenuto
+    let pageNum=1;
+    const totalPages=3;
+
+    // ── Helpers ─────────────────────────────────────────────────
+    function drawPageBg(){
+      doc.setFillColor(255,255,255);doc.rect(0,0,W,PAGE_H,'F');
+    }
+    function drawMiniHeader(title){
+      doc.setFillColor(15,23,42);doc.rect(0,0,W,16,'F');
+      doc.setFont('courier','bold');doc.setFontSize(7);doc.setTextColor(0,220,140);
+      doc.text('DEEP ANALYSIS v3.0',M,10);
+      doc.setTextColor(100,116,139);doc.text(title,W-M,10,{align:'right'});
+    }
+    function drawFooter(pg){
+      doc.setDrawColor(200,210,225);doc.setLineWidth(0.3);doc.line(M,PAGE_H-13,W-M,PAGE_H-13);
+      doc.setFont('courier','normal');doc.setFontSize(6);doc.setTextColor(150,160,175);
+      doc.text('Deep Analysis v3.0 — I risultati sono probabilistici e non sostituiscono una perizia forense professionale.',M,PAGE_H-8);
+      doc.text(`Pagina ${pg} di ${totalPages}`,W-M,PAGE_H-8,{align:'right'});
+    }
+    // Controlla se c'è abbastanza spazio; se no, aggiunge pagina con header/footer
+    function checkSpace(neededH, headerTitle){
+      if(y+neededH>CONTENT_BOTTOM){
+        drawFooter(pageNum);
+        doc.addPage();pageNum++;
+        drawPageBg();
+        drawMiniHeader(headerTitle||'RISULTATI ANALISI');
+        y=24;
+      }
+    }
+    function sectionTitle(text){
+      checkSpace(14);
+      doc.setFont('courier','bold');doc.setFontSize(8);doc.setTextColor(30,100,200);
+      doc.text(text,M,y);y+=5;
+      doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,y,W-M,y);y+=6;
+    }
 
     // ════════════════════════════════════════════
     // PAGINA 1 — COPERTINA
     // ════════════════════════════════════════════
-    // Sfondo bianco con fascia header
-    doc.setFillColor(255,255,255);doc.rect(0,0,W,297,'F');
+    drawPageBg();
 
     // Fascia header scura
     doc.setFillColor(15,23,42);doc.rect(0,0,W,80,'F');
-
-    // Linea accent verde
     doc.setDrawColor(0,200,120);doc.setLineWidth(1);doc.line(0,80,W,80);
 
     // Titolo
@@ -706,17 +748,14 @@ async function downloadPDF(){
     doc.text('AI FORENSICS ENGINE  v3.0',W/2,50,{align:'center'});
     doc.setTextColor(100,116,139);doc.setFontSize(8);
     doc.text('RAPPORTO DI ANALISI FORENSE DIGITALE',W/2,60,{align:'center'});
-
-    // Decorative line
     doc.setDrawColor(0,200,120);doc.setLineWidth(0.3);
     doc.line(M+20,68,W-M-20,68);
-
-    // Data e ora nella fascia header
     doc.setTextColor(148,163,184);doc.setFontSize(7.5);
     doc.text(`Data analisi: ${analysisDate.toLocaleString('it-IT',{weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'})}`,W/2,75,{align:'center'});
 
-    // ── SHA-256 BOX ──
     let y=100;
+
+    // SHA-256
     doc.setFillColor(240,253,248);doc.setDrawColor(0,180,100);doc.setLineWidth(0.5);
     doc.roundedRect(M,y,cW,30,3,3,'FD');
     doc.setFont('courier','bold');doc.setFontSize(7.5);doc.setTextColor(0,120,70);
@@ -724,15 +763,12 @@ async function downloadPDF(){
     doc.setDrawColor(0,180,100);doc.setLineWidth(0.2);doc.line(M+6,y+11,M+cW-6,y+11);
     doc.setFont('courier','normal');doc.setFontSize(8);doc.setTextColor(15,23,42);
     const sha=fileSHA256||'Non disponibile';
-    // Split SHA in due righe da 32 chars
     doc.text(sha.slice(0,32),M+6,y+18);
     doc.text(sha.slice(32),M+6,y+24);
     y+=38;
 
-    // ── FILE INFO ──
-    doc.setFont('courier','bold');doc.setFontSize(8);doc.setTextColor(30,100,200);
-    doc.text('FILE ANALIZZATO',M,y);y+=5;
-    doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,y,W-M,y);y+=6;
+    // File info
+    sectionTitle('FILE ANALIZZATO');
     const img=document.getElementById('previewImg');
     const infoRows=[
       ['Nome file',currentFile.name],
@@ -744,94 +780,88 @@ async function downloadPDF(){
       ['Canali colore','RGB (+ Alpha)'],
     ];
     for(const [k,v] of infoRows){
+      checkSpace(6,'COPERTINA');
       doc.setFont('courier','normal');doc.setFontSize(7.5);
       doc.setTextColor(100,116,139);doc.text(k,M,y);
       doc.setTextColor(15,23,42);doc.text(String(v),M+44,y);y+=5.5;
     }
-    y+=6;
+    y+=4;
 
-    // ── METODOLOGIA ──
-    doc.setFont('courier','bold');doc.setFontSize(8);doc.setTextColor(30,100,200);
-    doc.text('METODOLOGIA DI ANALISI',M,y);y+=5;
-    doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,y,W-M,y);y+=6;
+    // Metodologia
+    sectionTitle('METODOLOGIA DI ANALISI');
     const methods=[
       ['Claude Vision AI (x2)','Analisi visiva indipendente in doppio passaggio con prompt differenziati. Peso ensemble: 55%'],
       ['Error Level Analysis','Rilevamento incoerenze di compressione JPEG per identificare zone manipolate. Peso: 13%'],
       ['Metadati & EXIF','Analisi firma file, risoluzione, rapporto dimensione/pixel, mismatch MIME. Peso: 11%'],
       ['Pattern LSB','Analisi distribuzione bit meno significativi e correlazione inter-canale. Peso: 11%'],
-      ['Copy-Move Detection','Ricerca di regioni duplicate all\'interno dell\'immagine. Peso: 10%'],
+      ['Copy-Move Detection','Ricerca di regioni duplicate all'interno dell'immagine. Peso: 10%'],
     ];
     for(const [name,desc] of methods){
+      const lines=doc.splitTextToSize(desc,cW-38);
+      const rowH=lines.length*4.5+3;
+      checkSpace(rowH+2,'COPERTINA');
       doc.setFont('courier','bold');doc.setFontSize(7);doc.setTextColor(15,23,42);
       doc.text(`• ${name}:`,M,y);
       doc.setFont('courier','normal');doc.setTextColor(60,80,100);
-      const lines=doc.splitTextToSize(desc,cW-38);
       doc.text(lines,M+38,y);
-      y+=lines.length*4.5+2;
+      y+=rowH;
     }
     y+=4;
 
-    // ── DISCLAIMER LEGALE ──
+    // Disclaimer
+    const dText='Il presente rapporto è prodotto da un sistema automatizzato di analisi probabilistica e NON costituisce perizia forense legalmente riconosciuta. I risultati hanno natura indicativa e non deterministica. Lo stesso file può produrre risultati diversi in analisi successive. Per uso legale è necessario rivolgersi a un perito informatico forense certificato. L'autore declina ogni responsabilità per decisioni prese sulla base esclusiva di questo documento.';
+    const dLines=doc.splitTextToSize(dText,cW-10);
+    const discH=dLines.length*4+14;
+    checkSpace(discH,'COPERTINA');
     doc.setFillColor(255,247,230);doc.setDrawColor(200,150,0);doc.setLineWidth(0.3);
-    doc.roundedRect(M,y,cW,28,2,2,'FD');
+    doc.roundedRect(M,y,cW,discH,2,2,'FD');
     doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(150,90,0);
     doc.text('AVVERTENZA LEGALE',M+5,y+7);
     doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(80,60,20);
-    const disclaimer='Il presente rapporto è prodotto da un sistema automatizzato di analisi probabilistica e NON costituisce perizia forense legalmente riconosciuta. I risultati hanno natura indicativa e non deterministica. Lo stesso file può produrre risultati leggermente diversi in analisi successive. Per uso legale, giudiziario o probatorio è necessario rivolgersi a un perito informatico forense certificato e iscritto all\'albo. L\'autore declina ogni responsabilità per decisioni prese sulla base esclusiva di questo documento.';
-    const dLines=doc.splitTextToSize(disclaimer,cW-10);
     doc.text(dLines,M+5,y+13);
-    y+=32;
+    y+=discH+4;
 
-    // Footer pag 1
-    doc.setDrawColor(200,210,225);doc.setLineWidth(0.3);doc.line(M,284,W-M,284);
-    doc.setFont('courier','normal');doc.setFontSize(6);doc.setTextColor(150,160,175);
-    doc.text('Deep Analysis v3.0 — Rapporto generato automaticamente',M,289);
-    doc.text('Pagina 1 di 3',W-M,289,{align:'right'});
+    drawFooter(pageNum);
 
     // ════════════════════════════════════════════
-    // PAGINA 2 — RISULTATI ANALISI
+    // PAGINA 2 — RISULTATI
     // ════════════════════════════════════════════
-    doc.addPage();
-    doc.setFillColor(255,255,255);doc.rect(0,0,W,297,'F');
-    // Mini header
-    doc.setFillColor(15,23,42);doc.rect(0,0,W,16,'F');
-    doc.setFont('courier','bold');doc.setFontSize(7);doc.setTextColor(0,220,140);
-    doc.text('DEEP ANALYSIS v3.0',M,10);
-    doc.setTextColor(100,116,139);doc.text('RISULTATI ANALISI',W-M,10,{align:'right'});
-    y=26;
+    doc.addPage();pageNum++;
+    drawPageBg();
+    drawMiniHeader('RISULTATI ANALISI');
+    y=24;
 
-    // VERDETTO
+    // Verdetto
     const ens=lastResults.ensemble;
     const verdictColors={real:[0,160,90],fake:[200,40,60],uncertain:[180,140,0]};
     const vc=verdictColors[ens.cls]||[100,100,100];
+    checkSpace(30);
     doc.setFillColor(248,250,252);doc.setDrawColor(...vc);doc.setLineWidth(0.8);
     doc.roundedRect(M,y,cW,26,3,3,'FD');
     doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(...vc);
     doc.text(ens.verdict,M+8,y+12);
     doc.setFont('courier','normal');doc.setFontSize(7);doc.setTextColor(100,116,139);
     doc.text(ens.confidence,M+8,y+20);
-    // Score circle
     doc.setFillColor(...vc);doc.circle(W-M-14,y+13,10,'F');
     doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(255,255,255);
     doc.text(`${ens.fakeScore}%`,W-M-14,y+16,{align:'center'});
-    doc.setFont('courier','normal');doc.setFontSize(5.5);doc.setTextColor(255,255,255);
+    doc.setFont('courier','normal');doc.setFontSize(5.5);
     doc.text('SCORE',W-M-14,y+21,{align:'center'});
     y+=32;
 
-    // DOUBLE CHECK
+    // Double check
     const diff=Math.abs(lastResults.vision.fakeScore-lastResults.vision2.fakeScore);
     const agree=diff<=20;
+    checkSpace(14);
     doc.setFillColor(agree?240:255,agree?253:247,agree?248:230);
     doc.setDrawColor(agree?0:180,agree?160:130,agree?90:0);doc.setLineWidth(0.3);
     doc.roundedRect(M,y,cW,10,2,2,'FD');
     doc.setFont('courier','normal');doc.setFontSize(7);doc.setTextColor(agree?0:150,agree?120:90,agree?70:0);
-    doc.text(`${agree?'✓ DOPPIO PASSAGGIO CONCORDE':'⚠ PASSAGGI DISCORDANTI'} — Delta: ${diff}% — Passaggio 1: ${lastResults.vision.fakeScore}% / Passaggio 2: ${lastResults.vision2.fakeScore}%`,M+5,y+6.5);
+    doc.text(`${agree?'DOPPIO PASSAGGIO CONCORDE':'PASSAGGI DISCORDANTI'} — Delta: ${diff}% — P1: ${lastResults.vision.fakeScore}% / P2: ${lastResults.vision2.fakeScore}%`,M+5,y+6.5);
     y+=16;
 
-    // SCORES MODULI
-    doc.setFont('courier','bold');doc.setFontSize(8);doc.setTextColor(30,100,200);
-    doc.text('ANALISI MULTI-MODELLO',M,y);y+=5;
-    doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,y,W-M,y);y+=6;
+    // Scores moduli
+    sectionTitle('ANALISI MULTI-MODELLO');
     const bars=[
       ['Claude Vision AI — Passaggio 1',lastResults.vision.fakeScore,[0,160,90]],
       ['Claude Vision AI — Passaggio 2',lastResults.vision2.fakeScore,[0,160,90]],
@@ -843,29 +873,28 @@ async function downloadPDF(){
     ];
     for(const [label,score,color] of bars){
       const isBold=label.includes('Ensemble');
+      checkSpace(isBold?13:11);
       doc.setFont('courier',isBold?'bold':'normal');doc.setFontSize(7);doc.setTextColor(15,23,42);
       doc.text(label,M,y);
       doc.setTextColor(100,116,139);doc.text(`${score}%`,W-M,y,{align:'right'});
       doc.setFillColor(226,232,240);doc.roundedRect(M,y+2,cW,isBold?4:3,1,1,'F');
       doc.setFillColor(...color);doc.roundedRect(M,y+2,(cW*score/100),isBold?4:3,1,1,'F');
-      y+=isBold?11:9;
+      y+=isBold?13:11;
     }
-    y+=4;
+    y+=2;
 
-    // INDICATORI CHIAVE
-    doc.setFont('courier','bold');doc.setFontSize(8);doc.setTextColor(30,100,200);
-    doc.text('INDICATORI CHIAVE',M,y);y+=5;
-    doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,y,W-M,y);y+=6;
+    // Indicatori chiave
+    sectionTitle('INDICATORI CHIAVE');
     const ki=lastResults.vision.keyIndicators||{};
     const indicators=[['Texture',ki.texture||'n/d'],['Illuminazione',ki.lighting||'n/d'],['Bordi',ki.edges||'n/d'],['Rumore',ki.noise||'n/d'],['Anatomia',ki.anatomy||'n/d']];
     const colW2=cW/indicators.length;
+    checkSpace(24);
     for(let i=0;i<indicators.length;i++){
       const [k,v]=indicators[i];const x=M+i*colW2;
       const isOk=['naturale','coerente','naturali','corretta'].includes(v);
       const isWarn=['sintetica','incoerente','artificiali','artificiale','sovra-nitidi','anomalie rilevate'].includes(v);
-      const bColor=isOk?[240,253,248]:isWarn?[255,241,242]:[248,250,252];
-      const bBorder=isOk?[0,160,90]:isWarn?[200,40,60]:[200,210,225];
-      doc.setFillColor(...bColor);doc.setDrawColor(...bBorder);doc.setLineWidth(0.25);
+      doc.setFillColor(...(isOk?[240,253,248]:isWarn?[255,241,242]:[248,250,252]));
+      doc.setDrawColor(...(isOk?[0,160,90]:isWarn?[200,40,60]:[200,210,225]));doc.setLineWidth(0.25);
       doc.roundedRect(x,y,colW2-2,18,2,2,'FD');
       doc.setFont('courier','normal');doc.setFontSize(6);doc.setTextColor(100,116,139);
       doc.text(k.toUpperCase(),x+colW2/2-1,y+7,{align:'center'});
@@ -875,22 +904,16 @@ async function downloadPDF(){
     }
     y+=24;
 
-    // OSSERVAZIONI FORENSI
-    doc.setFont('courier','bold');doc.setFontSize(8);doc.setTextColor(30,100,200);
-    doc.text('OSSERVAZIONI FORENSI — CLAUDE VISION AI',M,y);y+=5;
-    doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,y,W-M,y);y+=6;
+    // Osservazioni forensi
+    sectionTitle('OSSERVAZIONI FORENSI — CLAUDE VISION AI');
     const allFindings=[
       ...(lastResults.vision.findings||[]).map(f=>`[P1] ${f}`),
       ...(lastResults.vision2.findings||[]).map(f=>`[P2] ${f}`)
     ];
     for(let i=0;i<allFindings.length;i++){
       const lines=doc.splitTextToSize(`${i+1}. ${allFindings[i]}`,cW-10);
-      const boxH=lines.length*4.5+6;
-      if(y+boxH>278){
-        doc.setFont('courier','normal');doc.setFontSize(6);doc.setTextColor(150,160,175);
-        doc.text(`[...continua — ${allFindings.length-i} osservazioni omesse per spazio]`,M,y+4);
-        break;
-      }
+      const boxH=lines.length*4.5+7;
+      checkSpace(boxH+3,'RISULTATI ANALISI');
       const isP2=allFindings[i].startsWith('[P2]');
       doc.setFillColor(isP2?240:245,isP2?248:252,isP2?255:248);
       doc.setDrawColor(isP2?77:0,isP2?159:160,isP2?255:90);doc.setLineWidth(0.2);
@@ -899,8 +922,9 @@ async function downloadPDF(){
       doc.text(lines,M+5,y+4.5);y+=boxH+3;
     }
 
-    // Copy-Move
+    // Copy-Move alert
     if(lastResults.copyMove.anomaly){
+      checkSpace(16,'RISULTATI ANALISI');
       doc.setFillColor(255,241,242);doc.setDrawColor(200,40,60);doc.setLineWidth(0.35);
       doc.roundedRect(M,y,cW,12,2,2,'FD');
       doc.setFont('courier','bold');doc.setFontSize(7);doc.setTextColor(160,20,40);
@@ -909,6 +933,7 @@ async function downloadPDF(){
 
     // AI Generator
     if(lastResults.vision.aiGenerator&&lastResults.vision.aiGenerator!=='nessuno'&&lastResults.vision.aiGenerator!=='sconosciuto'){
+      checkSpace(18,'RISULTATI ANALISI');
       doc.setFillColor(255,241,242);doc.setDrawColor(200,40,60);doc.setLineWidth(0.4);
       doc.roundedRect(M,y,cW,14,2,2,'FD');
       doc.setFont('courier','bold');doc.setFontSize(7);doc.setTextColor(160,20,40);
@@ -917,31 +942,22 @@ async function downloadPDF(){
       doc.text(lastResults.vision.aiGenerator,M+5,y+12);y+=18;
     }
 
-    // Footer pag 2
-    doc.setDrawColor(200,210,225);doc.setLineWidth(0.3);doc.line(M,284,W-M,284);
-    doc.setFont('courier','normal');doc.setFontSize(6);doc.setTextColor(150,160,175);
-    doc.text('Deep Analysis v3.0 — Rapporto generato automaticamente',M,289);
-    doc.text('Pagina 2 di 3',W-M,289,{align:'right'});
+    drawFooter(pageNum);
 
     // ════════════════════════════════════════════
-    // PAGINA 3 — IMMAGINE + ELA MAP
+    // PAGINA 3 — MATERIALE VISIVO
     // ════════════════════════════════════════════
-    doc.addPage();
-    doc.setFillColor(255,255,255);doc.rect(0,0,W,297,'F');
-    // Mini header
-    doc.setFillColor(15,23,42);doc.rect(0,0,W,16,'F');
-    doc.setFont('courier','bold');doc.setFontSize(7);doc.setTextColor(0,220,140);
-    doc.text('DEEP ANALYSIS v3.0',M,10);
-    doc.setTextColor(100,116,139);doc.text('MATERIALE VISIVO',W-M,10,{align:'right'});
+    doc.addPage();pageNum++;
+    drawPageBg();
+    drawMiniHeader('MATERIALE VISIVO');
     y=24;
 
     // Immagine originale
-    doc.setFont('courier','bold');doc.setFontSize(8);doc.setTextColor(30,100,200);
-    doc.text('IMMAGINE ANALIZZATA',M,y);y+=4;
-    doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,y,W-M,y);y+=4;
-    const maxW=cW,maxH=100;
-    const ratio=Math.min(maxW/img.naturalWidth,maxH/img.naturalHeight);
+    sectionTitle('IMMAGINE ANALIZZATA');
+    const maxImgH=110;
+    const ratio=Math.min(cW/img.naturalWidth,maxImgH/img.naturalHeight);
     const dW=Math.round(img.naturalWidth*ratio),dH=Math.round(img.naturalHeight*ratio);
+    checkSpace(dH+10);
     const xOff=M+(cW-dW)/2;
     try{doc.addImage(document.getElementById('previewImg').src,'JPEG',xOff,y,dW,dH);}catch(e){}
     doc.setFont('courier','normal');doc.setFontSize(6.5);doc.setTextColor(100,116,139);
@@ -949,49 +965,45 @@ async function downloadPDF(){
     y+=dH+12;
 
     // ELA Map
-    doc.setFont('courier','bold');doc.setFontSize(8);doc.setTextColor(30,100,200);
-    doc.text('MAPPA ELA — ERROR LEVEL ANALYSIS',M,y);y+=4;
-    doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,y,W-M,y);y+=4;
+    sectionTitle('MAPPA ELA — ERROR LEVEL ANALYSIS');
     const elaDisp=document.getElementById('elaDisplay');
     if(elaDisp.width>0){
+      const elaRatio=Math.min(cW/elaDisp.width,110/elaDisp.height);
+      const eW=Math.round(elaDisp.width*elaRatio),eH=Math.round(elaDisp.height*elaRatio);
+      checkSpace(eH+20);
       try{
         const elaDataURL=elaDisp.toDataURL('image/jpeg',0.85);
-        const elaRatio=Math.min(cW/elaDisp.width,100/elaDisp.height);
-        const eW=Math.round(elaDisp.width*elaRatio),eH=Math.round(elaDisp.height*elaRatio);
         const eXoff=M+(cW-eW)/2;
         doc.addImage(elaDataURL,'JPEG',eXoff,y,eW,eH);
-        y+=eH+5;
+        y+=eH+6;
       }catch(e){}
     }
-    // Legenda ELA
+    // Legenda
+    checkSpace(20);
     doc.setFillColor(255,220,220);doc.rect(M,y,15,5,'F');
     doc.setFont('courier','normal');doc.setFontSize(6.5);doc.setTextColor(80,80,80);
-    doc.text('Zone ad alta varianza (possibile manipolazione)',M+17,y+3.8);y+=8;
+    doc.text('Zone ad alta varianza — possibile manipolazione',M+18,y+3.8);y+=8;
     doc.setFillColor(210,225,255);doc.rect(M,y,15,5,'F');
-    doc.text('Zone a bassa varianza (possibile fill AI / rendering)',M+17,y+3.8);y+=12;
+    doc.text('Zone a bassa varianza — possibile fill AI / rendering',M+18,y+3.8);y+=12;
 
-    // SHA recap in fondo
+    // SHA recap
+    checkSpace(20);
     doc.setFillColor(248,250,252);doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);
-    doc.roundedRect(M,y,cW,16,2,2,'FD');
+    doc.roundedRect(M,y,cW,18,2,2,'FD');
     doc.setFont('courier','bold');doc.setFontSize(6.5);doc.setTextColor(100,116,139);
     doc.text('SHA-256:',M+5,y+6);
     doc.setFont('courier','normal');doc.setTextColor(15,23,42);
-    doc.text(fileSHA256||'n/d',M+24,y+6);
-    doc.setTextColor(100,116,139);
+    const shaFull=fileSHA256||'n/d';
+    doc.text(shaFull.slice(0,42),M+24,y+6);
+    doc.setFont('courier','normal');doc.setFontSize(6);doc.setTextColor(100,116,139);
     doc.text(`Analisi: ${analysisDate.toLocaleString('it-IT')}`,M+5,y+12);
-    doc.text(`Score finale: ${ens.fakeScore}% · Verdetto: ${ens.verdict}`,W-M,y+12,{align:'right'});
+    doc.text(`Score: ${ens.fakeScore}% · ${ens.verdict}`,W-M,y+12,{align:'right'});
 
-    // Footer pag 3
-    doc.setDrawColor(200,210,225);doc.setLineWidth(0.3);doc.line(M,284,W-M,284);
-    doc.setFont('courier','normal');doc.setFontSize(6);doc.setTextColor(150,160,175);
-    doc.text('Deep Analysis v3.0 — I risultati sono probabilistici e non sostituiscono una perizia forense professionale certificata.',M,289);
-    doc.text('Pagina 3 di 3',W-M,289,{align:'right'});
+    drawFooter(pageNum);
 
     const fname=`deep-analysis-${currentFile.name.replace(/\.[^.]+$/,'')}-${analysisDate.toISOString().slice(0,10)}.pdf`;
     doc.save(fname);
   }catch(err){
-    console.error('PDF error:',err);alert('Errore PDF: '+err.message);
-  }
   btn.disabled=false;
   btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> PDF';
 }
