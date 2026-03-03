@@ -7,216 +7,148 @@
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-  :root {
-    --bg: #080c10;
-    --surface: #0d1117;
-    --border: #1a2332;
-    --accent: #00ff9d;
-    --accent2: #ff3e6c;
-    --accent3: #4d9fff;
-    --text: #c8d6e5;
-    --muted: #4a5568;
-    --warn: #f6c90e;
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
-  body::before {
-    content:''; position:fixed; inset:0;
-    background-image: linear-gradient(rgba(0,255,157,0.03) 1px,transparent 1px), linear-gradient(90deg,rgba(0,255,157,0.03) 1px,transparent 1px);
-    background-size:40px 40px; pointer-events:none; z-index:0;
-  }
-  .container { width:100%; max-width:1600px; margin:0 auto; padding:0 clamp(20px, 3vw, 48px); position:relative; z-index:1; }
+  :root{--bg:#080c10;--surface:#0d1117;--border:#1a2332;--accent:#00ff9d;--accent2:#ff3e6c;--accent3:#4d9fff;--text:#c8d6e5;--muted:#4a5568;--warn:#f6c90e;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,255,157,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,157,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+  .container{width:100%;max-width:1600px;margin:0 auto;padding:0 clamp(20px,3vw,48px);position:relative;z-index:1;}
+  header{padding:28px 0 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .logo-title{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:4px;color:#fff;animation:glitch 6s ease-in-out infinite;}
+  .logo-sub{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--accent);letter-spacing:3px;text-transform:uppercase;opacity:0.8;}
+  .version{font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:var(--muted);letter-spacing:2px;}
+  @keyframes glitch{0%,100%{text-shadow:0 0 30px rgba(0,255,157,0.4);}20%{text-shadow:-2px 0 rgba(255,62,108,0.8),2px 0 rgba(0,255,157,0.8);}60%{text-shadow:2px 0 rgba(77,159,255,0.8),-2px 0 rgba(0,255,157,0.6);}}
+  .main{display:grid;grid-template-columns:minmax(300px,2fr) minmax(340px,3fr);gap:clamp(16px,2vw,28px);padding:24px 0 20px;}
+  .drop-zone{border:1px dashed var(--muted);border-radius:4px;padding:40px 24px;text-align:center;cursor:pointer;transition:all 0.3s;background:rgba(13,17,23,0.8);position:relative;overflow:hidden;min-height:clamp(280px,35vh,480px);height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .drop-zone::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,255,157,0.04) 0%,transparent 70%);opacity:0;transition:opacity 0.3s;}
+  .drop-zone:hover,.drop-zone.dragging{border-color:var(--accent);box-shadow:0 0 30px rgba(0,255,157,0.08),inset 0 0 30px rgba(0,255,157,0.03);}
+  .drop-zone:hover::before,.drop-zone.dragging::before{opacity:1;}
+  .drop-icon{width:52px;height:52px;margin:0 auto 16px;border:1px solid var(--muted);border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.3s;}
+  .drop-zone:hover .drop-icon{border-color:var(--accent);box-shadow:0 0 20px rgba(0,255,157,0.2);}
+  .drop-text-main{font-size:0.88rem;color:var(--text);margin-bottom:6px;}
+  .drop-text-sub{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--muted);letter-spacing:1px;}
+  #fileInput{display:none;}
+  .preview-wrap{position:relative;width:100%;min-height:clamp(280px,35vh,480px);border-radius:4px;overflow:hidden;display:none;}
+  .preview-img{width:100%;height:100%;min-height:clamp(280px,35vh,480px);object-fit:contain;background:#000;display:block;}
+  .preview-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.85));padding:20px 16px 12px;}
+  .preview-filename{font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:var(--accent);letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .scan-lines{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,157,0.012) 2px,rgba(0,255,157,0.012) 4px);pointer-events:none;animation:scanMove 8s linear infinite;opacity:0;transition:opacity 0.5s;}
+  .scanning .scan-lines{opacity:1;}
+  .scan-beam{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);box-shadow:0 0 12px var(--accent);top:-10px;opacity:0;}
+  .scanning .scan-beam{opacity:1;animation:beamScan 2s ease-in-out infinite;}
+  @keyframes scanMove{from{background-position:0 0}to{background-position:0 200px}}
+  @keyframes beamScan{0%{top:0%}100%{top:100%}}
 
-  /* HEADER */
-  header { padding:28px 0 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
-  .logo-title { font-family:'Bebas Neue',sans-serif; font-size:2.2rem; letter-spacing:4px; color:#fff; animation:glitch 6s ease-in-out infinite; }
-  .logo-sub { font-family:'Share Tech Mono',monospace; font-size:0.62rem; color:var(--accent); letter-spacing:3px; text-transform:uppercase; opacity:0.8; }
-  .version { font-family:'Share Tech Mono',monospace; font-size:0.68rem; color:var(--muted); letter-spacing:2px; }
-  @keyframes glitch {
-    0%,100% { text-shadow:0 0 30px rgba(0,255,157,0.4); }
-    20% { text-shadow:-2px 0 rgba(255,62,108,0.8),2px 0 rgba(0,255,157,0.8); }
-    60% { text-shadow:2px 0 rgba(77,159,255,0.8),-2px 0 rgba(0,255,157,0.6); }
-  }
+  /* ELA CANVAS OVERLAY */
+  .ela-wrap{position:relative;display:none;border-radius:4px;overflow:hidden;margin-top:12px;}
+  .ela-canvas{width:100%;display:block;border-radius:4px;}
+  .ela-label{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--accent3);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
 
-  /* MAIN GRID */
-  .main { display:grid; grid-template-columns:minmax(300px,2fr) minmax(340px,3fr); gap:clamp(16px,2vw,28px); padding:24px 0 20px; }
+  /* SHA BOX */
+  .hash-box{border:1px solid var(--border);border-radius:4px;padding:10px 14px;background:var(--surface);margin-top:12px;display:none;}
+  .hash-label{font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--accent3);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+  .hash-val{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--accent);word-break:break-all;line-height:1.6;}
 
-  /* DROP ZONE */
-  .drop-zone {
-    border:1px dashed var(--muted); border-radius:4px; padding:40px 24px; text-align:center; cursor:pointer;
-    transition:all 0.3s; background:rgba(13,17,23,0.8); position:relative; overflow:hidden;
-    min-height:clamp(280px,35vh,480px); height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  }
-  .drop-zone::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at center,rgba(0,255,157,0.04) 0%,transparent 70%); opacity:0; transition:opacity 0.3s; }
-  .drop-zone:hover,.drop-zone.dragging { border-color:var(--accent); box-shadow:0 0 30px rgba(0,255,157,0.08),inset 0 0 30px rgba(0,255,157,0.03); }
-  .drop-zone:hover::before,.drop-zone.dragging::before { opacity:1; }
-  .drop-icon { width:52px; height:52px; margin:0 auto 16px; border:1px solid var(--muted); border-radius:50%; display:flex; align-items:center; justify-content:center; transition:all 0.3s; }
-  .drop-zone:hover .drop-icon { border-color:var(--accent); box-shadow:0 0 20px rgba(0,255,157,0.2); }
-  .drop-text-main { font-size:0.88rem; color:var(--text); margin-bottom:6px; }
-  .drop-text-sub { font-family:'Share Tech Mono',monospace; font-size:0.62rem; color:var(--muted); letter-spacing:1px; }
-  #fileInput { display:none; }
+  .action-bar{display:grid;grid-template-columns:1fr auto auto;gap:10px;margin-top:14px;align-items:stretch;}
+  .btn-analyze{padding:14px 20px;background:transparent;border:1px solid var(--accent);color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:0.75rem;letter-spacing:3px;text-transform:uppercase;cursor:pointer;border-radius:4px;transition:all 0.3s;position:relative;overflow:hidden;}
+  .btn-analyze::before{content:'';position:absolute;inset:0;background:var(--accent);transform:translateX(-100%);transition:transform 0.3s;z-index:0;}
+  .btn-analyze:hover::before{transform:translateX(0);}
+  .btn-analyze:hover{color:#000;}
+  .btn-analyze span{position:relative;z-index:1;}
+  .btn-analyze:disabled{opacity:0.3;cursor:not-allowed;}
+  .btn-analyze:disabled::before{display:none;}
+  .btn-icon{padding:14px 16px;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:0.7rem;letter-spacing:1px;cursor:pointer;border-radius:4px;transition:all 0.3s;white-space:nowrap;display:flex;align-items:center;gap:6px;}
+  .btn-icon:hover{border-color:var(--accent3);color:var(--accent3);box-shadow:0 0 14px rgba(77,159,255,0.12);}
+  .btn-icon.btn-pdf:hover{border-color:var(--accent2);color:var(--accent2);box-shadow:0 0 14px rgba(255,62,108,0.12);}
+  .btn-icon:disabled{opacity:0.25;cursor:not-allowed;pointer-events:none;}
 
-  /* PREVIEW */
-  .preview-wrap { position:relative; width:100%; min-height:clamp(280px,35vh,480px); border-radius:4px; overflow:hidden; display:none; }
-  .preview-img { width:100%; height:100%; min-height:clamp(280px,35vh,480px); object-fit:contain; background:#000; display:block; }
-  .preview-overlay { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent,rgba(0,0,0,0.85)); padding:20px 16px 12px; }
-  .preview-filename { font-family:'Share Tech Mono',monospace; font-size:0.68rem; color:var(--accent); letter-spacing:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .scan-lines { position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,157,0.012) 2px,rgba(0,255,157,0.012) 4px); pointer-events:none; animation:scanMove 8s linear infinite; opacity:0; transition:opacity 0.5s; }
-  .scanning .scan-lines { opacity:1; }
-  .scan-beam { position:absolute; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--accent),transparent); box-shadow:0 0 12px var(--accent); top:-10px; opacity:0; }
-  .scanning .scan-beam { opacity:1; animation:beamScan 2s ease-in-out infinite; }
-  @keyframes scanMove { from{background-position:0 0} to{background-position:0 200px} }
-  @keyframes beamScan { 0%{top:0%} 100%{top:100%} }
+  .right-panel{display:flex;flex-direction:column;gap:14px;}
+  .verdict-box{border:1px solid var(--border);border-radius:4px;padding:18px 20px;background:var(--surface);min-height:90px;display:flex;align-items:center;gap:20px;transition:all 0.5s;}
+  .verdict-box.real{border-color:var(--accent);background:rgba(0,255,157,0.04);box-shadow:0 0 30px rgba(0,255,157,0.06);}
+  .verdict-box.fake{border-color:var(--accent2);background:rgba(255,62,108,0.04);box-shadow:0 0 30px rgba(255,62,108,0.06);}
+  .verdict-box.uncertain{border-color:var(--warn);background:rgba(246,201,14,0.04);box-shadow:0 0 30px rgba(246,201,14,0.06);}
+  .verdict-icon{font-size:2.6rem;line-height:1;flex-shrink:0;}
+  .verdict-label{font-family:'Share Tech Mono',monospace;font-size:0.58rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;}
+  .verdict-value{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:3px;line-height:1;}
+  .verdict-box.real .verdict-value{color:var(--accent);}
+  .verdict-box.fake .verdict-value{color:var(--accent2);}
+  .verdict-box.uncertain .verdict-value{color:var(--warn);}
+  .verdict-conf{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--muted);margin-top:4px;}
+  .verdict-idle{font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:var(--muted);letter-spacing:2px;text-align:center;width:100%;}
 
-  /* ACTION BAR — sotto l'immagine, sempre visibile e ordinata */
-  .action-bar {
-    display:grid;
-    grid-template-columns:1fr auto auto;
-    gap:10px;
-    margin-top:14px;
-    align-items:stretch;
-  }
-  .btn-analyze {
-    padding:14px 20px; background:transparent; border:1px solid var(--accent);
-    color:var(--accent); font-family:'Share Tech Mono',monospace; font-size:0.75rem;
-    letter-spacing:3px; text-transform:uppercase; cursor:pointer; border-radius:4px;
-    transition:all 0.3s; position:relative; overflow:hidden;
-  }
-  .btn-analyze::before { content:''; position:absolute; inset:0; background:var(--accent); transform:translateX(-100%); transition:transform 0.3s; z-index:0; }
-  .btn-analyze:hover::before { transform:translateX(0); }
-  .btn-analyze:hover { color:#000; }
-  .btn-analyze span { position:relative; z-index:1; }
-  .btn-analyze:disabled { opacity:0.3; cursor:not-allowed; }
-  .btn-analyze:disabled::before { display:none; }
+  /* DOUBLE CHECK BADGE */
+  .double-check{font-family:'Share Tech Mono',monospace;font-size:0.6rem;padding:4px 10px;border-radius:20px;display:inline-block;margin-top:6px;}
+  .double-check.agree{background:rgba(0,255,157,0.1);color:var(--accent);border:1px solid rgba(0,255,157,0.3);}
+  .double-check.disagree{background:rgba(246,201,14,0.1);color:var(--warn);border:1px solid rgba(246,201,14,0.3);}
 
-  .btn-icon {
-    padding:14px 16px; background:transparent; border:1px solid var(--border);
-    color:var(--muted); font-family:'Share Tech Mono',monospace; font-size:0.7rem;
-    letter-spacing:1px; cursor:pointer; border-radius:4px; transition:all 0.3s;
-    white-space:nowrap; display:flex; align-items:center; gap:6px;
-  }
-  .btn-icon:hover { border-color:var(--accent3); color:var(--accent3); box-shadow:0 0 14px rgba(77,159,255,0.12); }
-  .btn-icon.btn-pdf:hover { border-color:var(--accent2); color:var(--accent2); box-shadow:0 0 14px rgba(255,62,108,0.12); }
-  .btn-icon:disabled { opacity:0.25; cursor:not-allowed; pointer-events:none; }
+  .conf-section{border:1px solid var(--border);border-radius:4px;padding:14px 18px;background:var(--surface);}
+  .section-title{font-family:'Share Tech Mono',monospace;font-size:0.58rem;letter-spacing:3px;color:var(--accent3);text-transform:uppercase;margin-bottom:12px;}
+  .conf-bar-wrap{margin-bottom:9px;}
+  .conf-bar-header{display:flex;justify-content:space-between;margin-bottom:4px;}
+  .conf-bar-label{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--text);letter-spacing:1px;}
+  .conf-bar-val{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--muted);}
+  .conf-bar-bg{height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+  .conf-bar-fill{height:100%;border-radius:2px;width:0%;transition:width 1.2s cubic-bezier(0.4,0,0.2,1);}
+  .fill-green{background:var(--accent);box-shadow:0 0 8px rgba(0,255,157,0.5);}
+  .fill-red{background:var(--accent2);box-shadow:0 0 8px rgba(255,62,108,0.5);}
+  .fill-blue{background:var(--accent3);box-shadow:0 0 8px rgba(77,159,255,0.5);}
+  .fill-warn{background:var(--warn);box-shadow:0 0 8px rgba(246,201,14,0.5);}
 
-  /* RIGHT PANEL */
-  .right-panel { display:flex; flex-direction:column; gap:14px; }
+  .modules-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .module{border:1px solid var(--border);border-radius:4px;padding:12px 14px;background:var(--surface);transition:border-color 0.5s;}
+  .module.alert-high{border-color:rgba(255,62,108,0.4);}
+  .module.alert-med{border-color:rgba(246,201,14,0.3);}
+  .module.alert-low{border-color:rgba(0,255,157,0.25);}
+  .module-title{font-family:'Share Tech Mono',monospace;font-size:0.56rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+  .module-dot{width:5px;height:5px;border-radius:50%;background:var(--muted);transition:background 0.5s;}
+  .alert-high .module-dot{background:var(--accent2);box-shadow:0 0 6px var(--accent2);}
+  .alert-med .module-dot{background:var(--warn);box-shadow:0 0 6px var(--warn);}
+  .alert-low .module-dot{background:var(--accent);box-shadow:0 0 6px var(--accent);}
+  .module-value{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:2px;color:#fff;line-height:1;margin-bottom:3px;}
+  .module-desc{font-size:0.63rem;color:var(--muted);line-height:1.5;}
 
-  /* VERDICT */
-  .verdict-box {
-    border:1px solid var(--border); border-radius:4px; padding:18px 20px;
-    background:var(--surface); min-height:90px; display:flex; align-items:center; gap:20px; transition:all 0.5s;
-  }
-  .verdict-box.real { border-color:var(--accent); background:rgba(0,255,157,0.04); box-shadow:0 0 30px rgba(0,255,157,0.06); }
-  .verdict-box.fake { border-color:var(--accent2); background:rgba(255,62,108,0.04); box-shadow:0 0 30px rgba(255,62,108,0.06); }
-  .verdict-box.uncertain { border-color:var(--warn); background:rgba(246,201,14,0.04); box-shadow:0 0 30px rgba(246,201,14,0.06); }
-  .verdict-icon { font-size:2.6rem; line-height:1; flex-shrink:0; }
-  .verdict-label { font-family:'Share Tech Mono',monospace; font-size:0.58rem; letter-spacing:3px; color:var(--muted); text-transform:uppercase; margin-bottom:4px; }
-  .verdict-value { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; letter-spacing:3px; line-height:1; }
-  .verdict-box.real .verdict-value { color:var(--accent); }
-  .verdict-box.fake .verdict-value { color:var(--accent2); }
-  .verdict-box.uncertain .verdict-value { color:var(--warn); }
-  .verdict-conf { font-family:'Share Tech Mono',monospace; font-size:0.65rem; color:var(--muted); margin-top:4px; }
-  .verdict-idle { font-family:'Share Tech Mono',monospace; font-size:0.72rem; color:var(--muted); letter-spacing:2px; text-align:center; width:100%; }
+  .bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(16px,2vw,28px);margin-bottom:24px;}
+  .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .meta-item{display:flex;flex-direction:column;gap:2px;}
+  .meta-key{font-family:'Share Tech Mono',monospace;font-size:0.53rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+  .meta-val{font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:var(--text);}
 
-  /* BARS */
-  .conf-section { border:1px solid var(--border); border-radius:4px; padding:14px 18px; background:var(--surface); }
-  .section-title { font-family:'Share Tech Mono',monospace; font-size:0.58rem; letter-spacing:3px; color:var(--accent3); text-transform:uppercase; margin-bottom:12px; }
-  .conf-bar-wrap { margin-bottom:9px; }
-  .conf-bar-header { display:flex; justify-content:space-between; margin-bottom:4px; }
-  .conf-bar-label { font-family:'Share Tech Mono',monospace; font-size:0.58rem; color:var(--text); letter-spacing:1px; }
-  .conf-bar-val { font-family:'Share Tech Mono',monospace; font-size:0.58rem; color:var(--muted); }
-  .conf-bar-bg { height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
-  .conf-bar-fill { height:100%; border-radius:2px; width:0%; transition:width 1.2s cubic-bezier(0.4,0,0.2,1); }
-  .fill-green { background:var(--accent); box-shadow:0 0 8px rgba(0,255,157,0.5); }
-  .fill-red { background:var(--accent2); box-shadow:0 0 8px rgba(255,62,108,0.5); }
-  .fill-blue { background:var(--accent3); box-shadow:0 0 8px rgba(77,159,255,0.5); }
-  .fill-warn { background:var(--warn); box-shadow:0 0 8px rgba(246,201,14,0.5); }
+  .log-box{border:1px solid var(--border);border-radius:4px;background:var(--surface);overflow:hidden;display:flex;flex-direction:column;}
+  .log-header{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;flex-shrink:0;}
+  .log-dot-r{width:8px;height:8px;border-radius:50%;background:var(--accent2);}
+  .log-dot-y{width:8px;height:8px;border-radius:50%;background:var(--warn);}
+  .log-dot-g{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+  .log-title{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:2px;color:var(--muted);margin-left:4px;}
+  .log-body{padding:12px 14px;max-height:170px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;flex:1;}
+  .log-entry{font-family:'Share Tech Mono',monospace;font-size:0.62rem;line-height:2;color:var(--muted);display:flex;gap:10px;opacity:0;transform:translateX(-8px);transition:all 0.3s;}
+  .log-entry.visible{opacity:1;transform:translateX(0);}
+  .log-time{color:var(--accent3);flex-shrink:0;}
+  .log-type-warn{color:var(--warn);}
+  .log-type-err{color:var(--accent2);}
+  .log-type-ok{color:var(--accent);}
+  .log-type-info{color:var(--muted);}
 
-  /* MODULES */
-  .modules-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .module { border:1px solid var(--border); border-radius:4px; padding:12px 14px; background:var(--surface); transition:border-color 0.5s; }
-  .module.alert-high { border-color:rgba(255,62,108,0.4); }
-  .module.alert-med { border-color:rgba(246,201,14,0.3); }
-  .module.alert-low { border-color:rgba(0,255,157,0.25); }
-  .module-title { font-family:'Share Tech Mono',monospace; font-size:0.56rem; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
-  .module-dot { width:5px; height:5px; border-radius:50%; background:var(--muted); transition:background 0.5s; }
-  .alert-high .module-dot { background:var(--accent2); box-shadow:0 0 6px var(--accent2); }
-  .alert-med .module-dot { background:var(--warn); box-shadow:0 0 6px var(--warn); }
-  .alert-low .module-dot { background:var(--accent); box-shadow:0 0 6px var(--accent); }
-  .module-value { font-family:'Bebas Neue',sans-serif; font-size:1.35rem; letter-spacing:2px; color:#fff; line-height:1; margin-bottom:3px; }
-  .module-desc { font-size:0.63rem; color:var(--muted); line-height:1.5; }
+  .disclaimer{border-top:1px solid var(--border);padding:14px 0 20px;display:flex;align-items:flex-start;gap:12px;}
+  .disclaimer-icon{font-size:0.9rem;opacity:0.6;margin-top:2px;flex-shrink:0;}
+  .disclaimer-text{font-size:0.63rem;color:var(--muted);line-height:1.6;}
 
-  /* BOTTOM SECTION */
-  .bottom-grid { display:grid; grid-template-columns:1fr 1fr; gap:clamp(16px,2vw,28px); margin-bottom:24px; }
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+  .pulsing{animation:pulse 1.2s ease-in-out infinite;}
+  #analysisCanvas,#elaCanvas{display:none;}
 
-  /* METADATA */
-  .meta-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  .meta-item { display:flex; flex-direction:column; gap:2px; }
-  .meta-key { font-family:'Share Tech Mono',monospace; font-size:0.53rem; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
-  .meta-val { font-family:'Share Tech Mono',monospace; font-size:0.68rem; color:var(--text); }
-
-  /* LOG */
-  .log-box { border:1px solid var(--border); border-radius:4px; background:var(--surface); overflow:hidden; display:flex; flex-direction:column; }
-  .log-header { padding:9px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:7px; flex-shrink:0; }
-  .log-dot-r { width:8px; height:8px; border-radius:50%; background:var(--accent2); }
-  .log-dot-y { width:8px; height:8px; border-radius:50%; background:var(--warn); }
-  .log-dot-g { width:8px; height:8px; border-radius:50%; background:var(--accent); }
-  .log-title { font-family:'Share Tech Mono',monospace; font-size:0.6rem; letter-spacing:2px; color:var(--muted); margin-left:4px; }
-  .log-body { padding:12px 14px; max-height:170px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--border) transparent; flex:1; }
-  .log-entry { font-family:'Share Tech Mono',monospace; font-size:0.62rem; line-height:2; color:var(--muted); display:flex; gap:10px; opacity:0; transform:translateX(-8px); transition:all 0.3s; }
-  .log-entry.visible { opacity:1; transform:translateX(0); }
-  .log-time { color:var(--accent3); flex-shrink:0; }
-  .log-type-warn { color:var(--warn); }
-  .log-type-err { color:var(--accent2); }
-  .log-type-ok { color:var(--accent); }
-  .log-type-info { color:var(--muted); }
-
-  /* DISCLAIMER */
-  .disclaimer { border-top:1px solid var(--border); padding:14px 0 20px; display:flex; align-items:flex-start; gap:12px; }
-  .disclaimer-icon { font-size:0.9rem; opacity:0.6; margin-top:2px; flex-shrink:0; }
-  .disclaimer-text { font-size:0.63rem; color:var(--muted); line-height:1.6; }
-
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-  .pulsing { animation:pulse 1.2s ease-in-out infinite; }
-  #analysisCanvas { display:none; }
-
-  /* LARGE SCREENS (>1400px): più spazio */
-  @media (min-width:1400px) {
-    .right-panel { gap:16px; }
-    .modules-grid { grid-template-columns:1fr 1fr 1fr 1fr; }
-    .module-value { font-size:1.5rem; }
-  }
-  /* MEDIUM (900-1200px) */
-  @media (max-width:1200px) {
-    .main { grid-template-columns:1fr 1fr; }
-  }
-  /* TABLET (600-900px) */
-  @media (max-width:900px) {
-    .main { grid-template-columns:1fr; }
-    .bottom-grid { grid-template-columns:1fr; }
-    .right-panel { gap:12px; }
-  }
-  /* MOBILE (<600px) */
-  @media (max-width:600px) {
-    .action-bar { grid-template-columns:1fr 1fr; }
-    .btn-analyze { grid-column:1/-1; }
-    .modules-grid { grid-template-columns:1fr 1fr; }
-    header { flex-direction:column; align-items:flex-start; gap:8px; }
-    .version { display:none; }
-    .logo-title { font-size:1.8rem; }
-    .drop-zone, .preview-wrap, .preview-img { min-height:220px; }
-  }
+  @media(min-width:1400px){.modules-grid{grid-template-columns:repeat(4,1fr);}}
+  @media(max-width:900px){.main{grid-template-columns:1fr;}.bottom-grid{grid-template-columns:1fr;}}
+  @media(max-width:600px){.action-bar{grid-template-columns:1fr 1fr;}.btn-analyze{grid-column:1/-1;}.modules-grid{grid-template-columns:1fr 1fr;}header{flex-direction:column;align-items:flex-start;gap:8px;}.version{display:none;}.logo-title{font-size:1.8rem;}.drop-zone,.preview-wrap,.preview-img{min-height:220px;}}
 </style>
 </head>
 <body>
 <canvas id="analysisCanvas"></canvas>
+<canvas id="elaCanvas"></canvas>
 
 <div class="container">
   <header>
-    <div class="logo">
+    <div>
       <div class="logo-title">DEEP ANALYSIS</div>
-      <div class="logo-sub">AI Forensics Engine v2.0</div>
+      <div class="logo-sub">AI Forensics Engine v3.0</div>
     </div>
     <div class="version" id="sysStatus">SYS_READY // AWAITING INPUT</div>
   </header>
@@ -226,36 +158,39 @@
     <div>
       <div id="dropZone" class="drop-zone" onclick="document.getElementById('fileInput').click()">
         <div class="drop-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00ff9d" stroke-width="1.5">
-            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
-            <polyline points="21 15 16 10 5 21"/>
-          </svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00ff9d" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
         </div>
         <div class="drop-text-main">Trascina o carica un'immagine</div>
         <div class="drop-text-sub" style="margin-top:6px">JPG · PNG · WEBP · GIF · BMP — MAX 20MB</div>
       </div>
       <div id="previewWrap" class="preview-wrap">
         <img id="previewImg" class="preview-img" alt="preview">
-        <div class="scan-lines"></div>
-        <div class="scan-beam"></div>
-        <div class="preview-overlay">
-          <div class="preview-filename" id="previewFilename"></div>
-        </div>
+        <div class="scan-lines"></div><div class="scan-beam"></div>
+        <div class="preview-overlay"><div class="preview-filename" id="previewFilename"></div></div>
       </div>
       <input type="file" id="fileInput" accept="image/*">
 
-      <!-- ACTION BAR: sempre sotto l'immagine, ben separati -->
+      <!-- SHA256 box -->
+      <div class="hash-box" id="hashBox">
+        <div class="hash-label">SHA-256 // Impronta digitale file</div>
+        <div class="hash-val" id="hashVal">—</div>
+      </div>
+
+      <!-- ELA visual -->
+      <div class="ela-wrap" id="elaWrap">
+        <div class="ela-label">▸ Error Level Analysis — Mappa anomalie</div>
+        <canvas class="ela-canvas" id="elaDisplay"></canvas>
+      </div>
+
       <div class="action-bar">
         <button class="btn-analyze" id="btnAnalyze" disabled onclick="startAnalysis()">
           <span id="btnText">▶ AVVIA ANALISI FORENSE</span>
         </button>
-        <button class="btn-icon" id="btnChange" onclick="changeImage()" disabled title="Carica nuova immagine">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-          NUOVA
+        <button class="btn-icon" id="btnChange" onclick="changeImage()" disabled title="Nuova immagine">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>NUOVA
         </button>
         <button class="btn-icon btn-pdf" id="btnPdf" onclick="downloadPDF()" disabled title="Scarica report PDF">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          PDF
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>PDF
         </button>
       </div>
     </div>
@@ -264,38 +199,28 @@
     <div class="right-panel">
       <div class="verdict-box" id="verdictBox">
         <div class="verdict-idle" id="verdictIdle">[ IN ATTESA DI INPUT ]</div>
-        <div id="verdictContent" style="display:none">
-          <div class="verdict-icon" id="verdictIcon"></div>
-          <div>
-            <div class="verdict-label">Verdetto Forense</div>
-            <div class="verdict-value" id="verdictValue"></div>
-            <div class="verdict-conf" id="verdictConf"></div>
+        <div id="verdictContent" style="display:none;width:100%">
+          <div style="display:flex;align-items:center;gap:20px">
+            <div class="verdict-icon" id="verdictIcon"></div>
+            <div>
+              <div class="verdict-label">Verdetto Forense</div>
+              <div class="verdict-value" id="verdictValue"></div>
+              <div class="verdict-conf" id="verdictConf"></div>
+              <div id="doubleCheckBadge"></div>
+            </div>
           </div>
         </div>
       </div>
 
       <div class="conf-section">
         <div class="section-title">▸ Analisi Multi-Modello</div>
-        <div class="conf-bar-wrap">
-          <div class="conf-bar-header"><span class="conf-bar-label">CLAUDE VISION AI</span><span class="conf-bar-val" id="val1">--</span></div>
-          <div class="conf-bar-bg"><div class="conf-bar-fill fill-green" id="bar1"></div></div>
-        </div>
-        <div class="conf-bar-wrap">
-          <div class="conf-bar-header"><span class="conf-bar-label">ERROR LEVEL ANALYSIS (ELA)</span><span class="conf-bar-val" id="val2">--</span></div>
-          <div class="conf-bar-bg"><div class="conf-bar-fill fill-red" id="bar2"></div></div>
-        </div>
-        <div class="conf-bar-wrap">
-          <div class="conf-bar-header"><span class="conf-bar-label">METADATI & FIRMA FILE</span><span class="conf-bar-val" id="val3">--</span></div>
-          <div class="conf-bar-bg"><div class="conf-bar-fill fill-blue" id="bar3"></div></div>
-        </div>
-        <div class="conf-bar-wrap">
-          <div class="conf-bar-header"><span class="conf-bar-label">PATTERN STATISTICI (LSB)</span><span class="conf-bar-val" id="val4">--</span></div>
-          <div class="conf-bar-bg"><div class="conf-bar-fill fill-warn" id="bar4"></div></div>
-        </div>
-        <div class="conf-bar-wrap" style="margin-bottom:0">
-          <div class="conf-bar-header"><span class="conf-bar-label">SCORE ENSEMBLE COMBINATO</span><span class="conf-bar-val" id="val5">--</span></div>
-          <div class="conf-bar-bg"><div class="conf-bar-fill fill-green" id="bar5" style="height:6px;border-radius:3px;"></div></div>
-        </div>
+        <div class="conf-bar-wrap"><div class="conf-bar-header"><span class="conf-bar-label">CLAUDE VISION — PASSAGGIO 1</span><span class="conf-bar-val" id="val1">--</span></div><div class="conf-bar-bg"><div class="conf-bar-fill fill-green" id="bar1"></div></div></div>
+        <div class="conf-bar-wrap"><div class="conf-bar-header"><span class="conf-bar-label">CLAUDE VISION — PASSAGGIO 2 (VERIFICA)</span><span class="conf-bar-val" id="val1b">--</span></div><div class="conf-bar-bg"><div class="conf-bar-fill fill-green" id="bar1b"></div></div></div>
+        <div class="conf-bar-wrap"><div class="conf-bar-header"><span class="conf-bar-label">ERROR LEVEL ANALYSIS (ELA)</span><span class="conf-bar-val" id="val2">--</span></div><div class="conf-bar-bg"><div class="conf-bar-fill fill-red" id="bar2"></div></div></div>
+        <div class="conf-bar-wrap"><div class="conf-bar-header"><span class="conf-bar-label">METADATI & FIRMA FILE</span><span class="conf-bar-val" id="val3">--</span></div><div class="conf-bar-bg"><div class="conf-bar-fill fill-blue" id="bar3"></div></div></div>
+        <div class="conf-bar-wrap"><div class="conf-bar-header"><span class="conf-bar-label">PATTERN STATISTICI (LSB)</span><span class="conf-bar-val" id="val4">--</span></div><div class="conf-bar-bg"><div class="conf-bar-fill fill-warn" id="bar4"></div></div></div>
+        <div class="conf-bar-wrap"><div class="conf-bar-header"><span class="conf-bar-label">COPY-MOVE DETECTION</span><span class="conf-bar-val" id="val6">--</span></div><div class="conf-bar-bg"><div class="conf-bar-fill fill-red" id="bar6"></div></div></div>
+        <div class="conf-bar-wrap" style="margin-bottom:0"><div class="conf-bar-header"><span class="conf-bar-label">SCORE ENSEMBLE COMBINATO</span><span class="conf-bar-val" id="val5">--</span></div><div class="conf-bar-bg"><div class="conf-bar-fill fill-green" id="bar5" style="height:6px;border-radius:3px;"></div></div></div>
       </div>
 
       <div class="modules-grid">
@@ -323,469 +248,753 @@
       </div>
     </div>
     <div class="log-box">
-      <div class="log-header">
-        <div class="log-dot-r"></div><div class="log-dot-y"></div><div class="log-dot-g"></div>
-        <div class="log-title">FORENSIC_LOG // STREAM</div>
-      </div>
-      <div class="log-body" id="logBody">
-        <div class="log-entry visible"><span class="log-time">00:00.00</span><span class="log-type-info">SYSTEM</span><span>Deep Analysis Engine inizializzato.</span></div>
-      </div>
+      <div class="log-header"><div class="log-dot-r"></div><div class="log-dot-y"></div><div class="log-dot-g"></div><div class="log-title">FORENSIC_LOG // STREAM</div></div>
+      <div class="log-body" id="logBody"><div class="log-entry visible"><span class="log-time">00:00.00</span><span class="log-type-info">SYSTEM</span><span>Deep Analysis Engine v3.0 inizializzato.</span></div></div>
     </div>
   </div>
 
   <div class="disclaimer">
     <div class="disclaimer-icon">⚠</div>
-    <div class="disclaimer-text">
-      <strong style="color:var(--warn)">NOTA:</strong> Deep Analysis combina Claude Vision AI con tecniche forensi (ELA, LSB, EXIF). I risultati sono probabilistici e non sostituiscono una perizia professionale. Falsi positivi/negativi sono possibili su immagini molto compresse.
-    </div>
+    <div class="disclaimer-text"><strong style="color:var(--warn)">NOTA:</strong> Deep Analysis v3.0 combina doppio passaggio Claude Vision AI, ELA visiva, copy-move detection, hash SHA-256 e analisi statistica. I risultati sono probabilistici e non sostituiscono una perizia forense professionale certificata. Falsi positivi/negativi sono possibili su immagini molto compresse o ridimensionate.</div>
   </div>
 </div>
 
 <script>
-  const { jsPDF } = window.jspdf;
-  let currentFile=null, currentImageData=null, currentBase64=null, isAnalyzing=false;
-  let lastResults=null, analysisDate=null;
+const{jsPDF}=window.jspdf;
+let currentFile=null,currentImageData=null,currentBase64=null,isAnalyzing=false;
+let lastResults=null,analysisDate=null,fileSHA256=null;
 
-  const dropZone=document.getElementById('dropZone');
-  const fileInput=document.getElementById('fileInput');
+const dropZone=document.getElementById('dropZone');
+const fileInput=document.getElementById('fileInput');
+dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('dragging');});
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('dragging'));
+dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('dragging');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadFile(f);});
+fileInput.addEventListener('change',e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
 
-  dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('dragging');});
-  dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('dragging'));
-  dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('dragging');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadFile(f);});
-  fileInput.addEventListener('change',e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
-
-  function loadFile(file) {
-    currentFile=file;
-    const reader=new FileReader();
-    reader.onload=ev=>{
-      currentBase64=ev.target.result.split(',')[1];
-      const img=document.getElementById('previewImg');
-      img.src=ev.target.result;
-      img.onload=()=>{
-        document.getElementById('dropZone').style.display='none';
-        const pw=document.getElementById('previewWrap'); pw.style.display='block';
-        document.getElementById('previewFilename').textContent=file.name;
-        document.getElementById('btnAnalyze').disabled=false;
-        document.getElementById('btnChange').disabled=false;
-        document.getElementById('btnPdf').disabled=true;
-        addLog('INFO',`Caricato: ${file.name} (${formatBytes(file.size)})`);
-        resetResults();
-        const canvas=document.getElementById('analysisCanvas');
-        const ctx=canvas.getContext('2d');
-        canvas.width=img.naturalWidth; canvas.height=img.naturalHeight;
-        ctx.drawImage(img,0,0);
-        currentImageData=ctx.getImageData(0,0,canvas.width,canvas.height);
-      };
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function formatBytes(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(2)+' MB';}
-
-  function changeImage(){
-    currentFile=null;currentImageData=null;currentBase64=null;isAnalyzing=false;lastResults=null;
-    document.getElementById('previewWrap').classList.remove('scanning');
-    document.getElementById('previewWrap').style.display='none';
-    document.getElementById('dropZone').style.display='flex';
-    document.getElementById('btnAnalyze').disabled=true;
-    document.getElementById('btnChange').disabled=true;
-    document.getElementById('btnPdf').disabled=true;
-    document.getElementById('btnText').textContent='▶ AVVIA ANALISI FORENSE';
-    document.getElementById('previewImg').src='';
-    fileInput.value='';
-    resetResults();
-    document.getElementById('logBody').innerHTML='';
-    document.getElementById('sysStatus').textContent='SYS_READY // AWAITING INPUT';
-    addLog('INFO','Pronto per nuova immagine.');
-  }
-
-  let logStart=Date.now();
-  function addLog(type,msg,d=0){
-    setTimeout(()=>{
-      const body=document.getElementById('logBody');
-      const el=((Date.now()-logStart)/1000).toFixed(2).padStart(6,'0');
-      const entry=document.createElement('div');entry.className='log-entry';
-      const tc={'WARN':'log-type-warn','ERR':'log-type-err','OK':'log-type-ok','INFO':'log-type-info'}[type]||'log-type-info';
-      entry.innerHTML=`<span class="log-time">00:${el}</span><span class="${tc}">${type}</span><span>${msg}</span>`;
-      body.appendChild(entry);requestAnimationFrame(()=>entry.classList.add('visible'));body.scrollTop=body.scrollHeight;
-    },d);
-  }
-
-  function resetResults(){
-    ['bar1','bar2','bar3','bar4','bar5'].forEach(id=>{document.getElementById(id).style.width='0%';});
-    ['val1','val2','val3','val4','val5'].forEach(id=>{document.getElementById(id).textContent='--';});
-    document.getElementById('verdictIdle').style.display='block';
-    const vc=document.getElementById('verdictContent');vc.style.display='none';
-    document.getElementById('verdictBox').className='verdict-box';
-    ['mod1','mod2','mod3','mod4'].forEach(id=>{const m=document.getElementById(id);m.className='module';m.querySelector('.module-value').textContent='---';m.querySelector('.module-desc').textContent='In attesa';});
-    ['mFile','mSize','mRes','mCh','mExif','mMime','mAr','mEnt'].forEach(id=>{document.getElementById(id).textContent='---';});
-  }
-
-  function delay(ms){return new Promise(r=>setTimeout(r,ms));}
-  function setBar(bId,vId,score){document.getElementById(bId).style.width=score+'%';document.getElementById(vId).textContent=score+'%';}
-
-  async function startAnalysis(){
-    if(isAnalyzing||!currentFile)return;
-    isAnalyzing=true;logStart=Date.now();analysisDate=new Date();
-    document.getElementById('btnAnalyze').disabled=true;
-    document.getElementById('btnChange').disabled=true;
-    document.getElementById('btnPdf').disabled=true;
-    document.getElementById('btnText').textContent='⟳ ANALISI IN CORSO...';
-    document.getElementById('sysStatus').textContent='ANALYZING // PLEASE WAIT';
-    document.getElementById('previewWrap').classList.add('scanning');
-    addLog('INFO','Avvio Deep Analysis Engine v2.0...');
+function loadFile(file){
+  currentFile=file;fileSHA256=null;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    currentBase64=ev.target.result.split(',')[1];
     const img=document.getElementById('previewImg');
-    updateMetadata(img);
-    addLog('INFO',`Risoluzione: ${img.naturalWidth}×${img.naturalHeight}px`,200);
-    const results={};
+    img.src=ev.target.result;
+    img.onload=()=>{
+      document.getElementById('dropZone').style.display='none';
+      document.getElementById('previewWrap').style.display='block';
+      document.getElementById('previewFilename').textContent=file.name;
+      document.getElementById('btnAnalyze').disabled=false;
+      document.getElementById('btnChange').disabled=false;
+      document.getElementById('btnPdf').disabled=true;
+      document.getElementById('elaWrap').style.display='none';
+      addLog('INFO',`Caricato: ${file.name} (${formatBytes(file.size)})`);
+      resetResults();
+      const canvas=document.getElementById('analysisCanvas');
+      const ctx=canvas.getContext('2d');
+      canvas.width=img.naturalWidth;canvas.height=img.naturalHeight;
+      ctx.drawImage(img,0,0);
+      currentImageData=ctx.getImageData(0,0,canvas.width,canvas.height);
+      // Calcola SHA-256
+      computeSHA256(ev.target.result).then(hash=>{
+        fileSHA256=hash;
+        document.getElementById('hashBox').style.display='block';
+        document.getElementById('hashVal').textContent=hash;
+        addLog('OK',`SHA-256: ${hash.slice(0,16)}...${hash.slice(-8)}`);
+      });
+    };
+  };
+  reader.readAsDataURL(file);
+}
 
-    addLog('INFO','Connessione Claude Vision API...',400);
-    await delay(500);
-    try{
-      results.vision=await analyzeWithClaudeVision();
-      setBar('bar1','val1',results.vision.fakeScore);
-      addLog(results.vision.fakeScore>55?'WARN':'OK',`Vision: ${results.vision.summary}`,600);
-    }catch(e){
-      addLog('ERR',`Vision API: ${e.message}`,600);
-      results.vision={fakeScore:50,summary:'API non raggiungibile',findings:[],confidence:'bassa',keyIndicators:{}};
-      setBar('bar1','val1',50);
-    }
+async function computeSHA256(dataURL){
+  const base64=dataURL.split(',')[1];
+  const binary=atob(base64);
+  const bytes=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+  const hashBuffer=await crypto.subtle.digest('SHA-256',bytes.buffer);
+  const hashArray=Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b=>b.toString(16).padStart(2,'0')).join('');
+}
 
-    addLog('INFO','Error Level Analysis...',1000);await delay(700);
-    results.ela=analyzeELA(currentImageData,img.naturalWidth,img.naturalHeight);
-    setBar('bar2','val2',results.ela.score);
-    addLog(results.ela.anomaly?'WARN':'OK',`ELA: ${results.ela.anomaly?'Incoerenze rilevate':'Coerenza uniforme'}`,1200);
+function formatBytes(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(2)+' MB';}
 
-    addLog('INFO','Analisi metadati...',1400);await delay(500);
-    results.exif=analyzeFileSignature(currentFile,img);
-    setBar('bar3','val3',results.exif.score);
-    addLog(results.exif.anomaly?'WARN':'OK',`EXIF: ${results.exif.msg}`,1600);
+function changeImage(){
+  currentFile=null;currentImageData=null;currentBase64=null;isAnalyzing=false;lastResults=null;fileSHA256=null;
+  document.getElementById('previewWrap').classList.remove('scanning');
+  document.getElementById('previewWrap').style.display='none';
+  document.getElementById('dropZone').style.display='flex';
+  document.getElementById('btnAnalyze').disabled=true;
+  document.getElementById('btnChange').disabled=true;
+  document.getElementById('btnPdf').disabled=true;
+  document.getElementById('btnText').textContent='▶ AVVIA ANALISI FORENSE';
+  document.getElementById('previewImg').src='';
+  document.getElementById('hashBox').style.display='none';
+  document.getElementById('elaWrap').style.display='none';
+  fileInput.value='';
+  resetResults();
+  document.getElementById('logBody').innerHTML='';
+  document.getElementById('sysStatus').textContent='SYS_READY // AWAITING INPUT';
+  addLog('INFO','Pronto per nuova immagine.');
+}
 
-    addLog('INFO','Pattern statistici LSB...',1800);await delay(600);
-    results.lsb=analyzeLSB(currentImageData);
-    setBar('bar4','val4',results.lsb.score);
-    addLog(results.lsb.anomaly?'WARN':'OK',`LSB: ${results.lsb.msg}`,2000);
+let logStart=Date.now();
+function addLog(type,msg,d=0){
+  setTimeout(()=>{
+    const body=document.getElementById('logBody');
+    const el=((Date.now()-logStart)/1000).toFixed(2).padStart(6,'0');
+    const entry=document.createElement('div');entry.className='log-entry';
+    const tc={'WARN':'log-type-warn','ERR':'log-type-err','OK':'log-type-ok','INFO':'log-type-info'}[type]||'log-type-info';
+    entry.innerHTML=`<span class="log-time">00:${el}</span><span class="${tc}">${type}</span><span>${msg}</span>`;
+    body.appendChild(entry);requestAnimationFrame(()=>entry.classList.add('visible'));body.scrollTop=body.scrollHeight;
+  },d);
+}
 
-    addLog('INFO','Calcolo ensemble pesato...',2200);await delay(400);
-    results.ensemble=computeEnsemble(results);
-    setBar('bar5','val5',results.ensemble.fakeScore);
-    addLog(results.ensemble.fakeScore>60?'ERR':'OK',`ENSEMBLE: ${results.ensemble.fakeScore}% probabilità AI`,2400);
+function resetResults(){
+  ['bar1','bar1b','bar2','bar3','bar4','bar5','bar6'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.width='0%';});
+  ['val1','val1b','val2','val3','val4','val5','val6'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='--';});
+  document.getElementById('verdictIdle').style.display='block';
+  document.getElementById('verdictContent').style.display='none';
+  document.getElementById('verdictBox').className='verdict-box';
+  document.getElementById('doubleCheckBadge').innerHTML='';
+  ['mod1','mod2','mod3','mod4'].forEach(id=>{const m=document.getElementById(id);m.className='module';m.querySelector('.module-value').textContent='---';m.querySelector('.module-desc').textContent='In attesa';});
+  ['mFile','mSize','mRes','mCh','mExif','mMime','mAr','mEnt'].forEach(id=>{document.getElementById(id).textContent='---';});
+}
 
-    await delay(2600);updateModules(results);
-    await delay(500);showVerdict(results.ensemble,results.vision);
+function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+function setBar(bId,vId,score){const b=document.getElementById(bId);const v=document.getElementById(vId);if(b)b.style.width=score+'%';if(v)v.textContent=score+'%';}
 
-    lastResults=results;
-    document.getElementById('previewWrap').classList.remove('scanning');
-    document.getElementById('btnAnalyze').disabled=false;
-    document.getElementById('btnChange').disabled=false;
-    document.getElementById('btnPdf').disabled=false;
-    document.getElementById('btnText').textContent='↺ RIPETI ANALISI';
-    document.getElementById('sysStatus').textContent='ANALYSIS COMPLETE';
-    isAnalyzing=false;
-    addLog('OK','Analisi completata.',200);
+async function startAnalysis(){
+  if(isAnalyzing||!currentFile)return;
+  isAnalyzing=true;logStart=Date.now();analysisDate=new Date();
+  document.getElementById('btnAnalyze').disabled=true;
+  document.getElementById('btnChange').disabled=true;
+  document.getElementById('btnPdf').disabled=true;
+  document.getElementById('btnText').textContent='⟳ ANALISI IN CORSO...';
+  document.getElementById('sysStatus').textContent='ANALYZING // PLEASE WAIT';
+  document.getElementById('previewWrap').classList.add('scanning');
+  addLog('INFO','Avvio Deep Analysis Engine v3.0...');
+  const img=document.getElementById('previewImg');
+  updateMetadata(img);
+  addLog('INFO',`Risoluzione: ${img.naturalWidth}x${img.naturalHeight}px`,200);
+  const results={};
+
+  // MODULO 1a: Claude Vision passaggio 1
+  addLog('INFO','Claude Vision — Passaggio 1...',400);
+  await delay(600);
+  try{
+    results.vision=await analyzeWithClaudeVision(false);
+    setBar('bar1','val1',results.vision.fakeScore);
+    addLog(results.vision.fakeScore>55?'WARN':'OK',`Vision P1: ${results.vision.summary}`,700);
+  }catch(e){
+    addLog('ERR',`Vision P1: ${e.message}`,700);
+    results.vision={fakeScore:50,summary:'API non disponibile',findings:[],confidence:'bassa',keyIndicators:{}};
+    setBar('bar1','val1',50);
   }
 
-  async function analyzeWithClaudeVision(){
-    const mime=currentFile.type||'image/jpeg';
-    const prompt=`Sei un esperto forense specializzato nel rilevamento di immagini generate da AI e immagini manipolate digitalmente. Analizza questa immagine con estrema attenzione.
+  // MODULO 1b: Claude Vision passaggio 2 (prompt diverso, verifica)
+  addLog('INFO','Claude Vision — Passaggio 2 (verifica indipendente)...',1000);
+  await delay(800);
+  try{
+    results.vision2=await analyzeWithClaudeVision(true);
+    setBar('bar1b','val1b',results.vision2.fakeScore);
+    addLog(results.vision2.fakeScore>55?'WARN':'OK',`Vision P2: ${results.vision2.summary}`,1200);
+  }catch(e){
+    addLog('ERR',`Vision P2: ${e.message}`,1200);
+    results.vision2={fakeScore:results.vision.fakeScore,summary:'Verifica non disponibile',findings:[],confidence:'bassa',keyIndicators:{}};
+    setBar('bar1b','val1b',results.vision2.fakeScore);
+  }
 
-Devi fornire una risposta SOLO in formato JSON valido, senza testo aggiuntivo, markdown o backtick. Il JSON deve avere esattamente questa struttura:
+  // MODULO 2: ELA + visual
+  addLog('INFO','Error Level Analysis + mappa visiva...',1400);
+  await delay(700);
+  results.ela=analyzeELA(currentImageData,img.naturalWidth,img.naturalHeight);
+  renderELAMap(currentImageData,img.naturalWidth,img.naturalHeight);
+  setBar('bar2','val2',results.ela.score);
+  addLog(results.ela.anomaly?'WARN':'OK',`ELA: ${results.ela.anomaly?'Incoerenze rilevate':'Coerenza uniforme'}`,1600);
+
+  // MODULO 3: Metadati
+  addLog('INFO','Analisi metadati e firma...',1800);
+  await delay(400);
+  results.exif=analyzeFileSignature(currentFile,img);
+  setBar('bar3','val3',results.exif.score);
+  addLog(results.exif.anomaly?'WARN':'OK',`EXIF: ${results.exif.msg}`,2000);
+
+  // MODULO 4: LSB
+  addLog('INFO','Pattern statistici LSB...',2100);
+  await delay(500);
+  results.lsb=analyzeLSB(currentImageData);
+  setBar('bar4','val4',results.lsb.score);
+  addLog(results.lsb.anomaly?'WARN':'OK',`LSB: ${results.lsb.msg}`,2300);
+
+  // MODULO 5: Copy-Move detection
+  addLog('INFO','Copy-Move detection...',2400);
+  await delay(600);
+  results.copyMove=analyzeCopyMove(currentImageData,img.naturalWidth,img.naturalHeight);
+  setBar('bar6','val6',results.copyMove.score);
+  addLog(results.copyMove.anomaly?'WARN':'OK',`Copy-Move: ${results.copyMove.msg}`,2600);
+
+  // ENSEMBLE
+  addLog('INFO','Calcolo ensemble pesato...',2700);
+  await delay(300);
+  results.ensemble=computeEnsemble(results);
+  setBar('bar5','val5',results.ensemble.fakeScore);
+  addLog(results.ensemble.fakeScore>60?'ERR':'OK',`ENSEMBLE: ${results.ensemble.fakeScore}% probabilità AI`,2900);
+
+  await delay(3100);
+  updateModules(results);
+  await delay(400);
+  showVerdict(results.ensemble,results.vision,results.vision2);
+
+  lastResults=results;
+  document.getElementById('previewWrap').classList.remove('scanning');
+  document.getElementById('btnAnalyze').disabled=false;
+  document.getElementById('btnChange').disabled=false;
+  document.getElementById('btnPdf').disabled=false;
+  document.getElementById('btnText').textContent='↺ RIPETI ANALISI';
+  document.getElementById('sysStatus').textContent='ANALYSIS COMPLETE';
+  isAnalyzing=false;
+  addLog('OK','Analisi completata.',200);
+}
+
+// ── CLAUDE VISION (doppio prompt) ─────────────────────────────
+async function analyzeWithClaudeVision(isSecondPass){
+  const mime=currentFile.type||'image/jpeg';
+  const prompt=isSecondPass
+    ?`Sei un secondo analista forense indipendente. Esamina questa immagine senza preconcetti per rilevare se è generata da AI o manipolata digitalmente.
+
+Rispondi SOLO con JSON valido, nessun testo extra:
 {
-  "fakeScore": <numero intero 0-100, dove 0=sicuramente reale, 100=sicuramente AI/manipolata>,
+  "fakeScore": <0-100>,
   "verdict": "<AUTENTICA|ARTIFICIALE|INCERTA>",
   "confidence": "<alta|media|bassa>",
-  "summary": "<frase breve max 80 caratteri>",
-  "findings": ["<osservazione 1>","<osservazione 2>","<osservazione 3>","<osservazione 4>"],
-  "aiGenerator": "<nome generatore AI sospetto o 'nessuno' o 'sconosciuto'>",
-  "manipulationType": "<tipo manipolazione o 'nessuna'>",
-  "keyIndicators": {
-    "texture": "<naturale|sintetica|ibrida>",
-    "lighting": "<coerente|incoerente|artificiale>",
-    "edges": "<naturali|artificiali|sovra-nitidi>",
-    "noise": "<assente|naturale|artificiale>",
-    "anatomy": "<corretta|anomalie rilevate|non applicabile>"
-  }
+  "summary": "<max 80 caratteri>",
+  "findings": ["<obs 1>","<obs 2>","<obs 3>"],
+  "aiGenerator": "<generatore o 'nessuno'>",
+  "manipulationType": "<tipo o 'nessuna'>",
+  "keyIndicators": {"texture":"<naturale|sintetica|ibrida>","lighting":"<coerente|incoerente|artificiale>","edges":"<naturali|artificiali|sovra-nitidi>","noise":"<assente|naturale|artificiale>","anatomy":"<corretta|anomalie rilevate|non applicabile>"}
 }
-Analizza texture, pelle, capelli, occhi, simmetria, sfondo, illuminazione, artefatti Midjourney/DALL-E/Stable Diffusion/Flux, bordi, imperfezioni, rumore sensore, aberrazioni cromatiche. Sii rigoroso. Rispondi SOLO con JSON.`;
+Focalizzati su: coerenza fisica (ombre, riflessi, prospettiva), pattern ripetuti, artefatti di generazione. Sii indipendente dal primo passaggio.`
+    :`Sei un esperto forense specializzato nel rilevamento di immagini generate da AI e manipolate digitalmente.
 
-    const response=await fetch('/api/analyze',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({imageBase64:currentBase64,mimeType:mime})
-    });
-    if(!response.ok){const err=await response.json().catch(()=>({}));throw new Error(err.error||`HTTP ${response.status}`);}
-    const data=await response.json();
-    return data;
+Rispondi SOLO con JSON valido, nessun testo extra:
+{
+  "fakeScore": <0-100>,
+  "verdict": "<AUTENTICA|ARTIFICIALE|INCERTA>",
+  "confidence": "<alta|media|bassa>",
+  "summary": "<max 80 caratteri>",
+  "findings": ["<obs 1>","<obs 2>","<obs 3>","<obs 4>"],
+  "aiGenerator": "<generatore o 'nessuno'>",
+  "manipulationType": "<tipo o 'nessuna'>",
+  "keyIndicators": {"texture":"<naturale|sintetica|ibrida>","lighting":"<coerente|incoerente|artificiale>","edges":"<naturali|artificiali|sovra-nitidi>","noise":"<assente|naturale|artificiale>","anatomy":"<corretta|anomalie rilevate|non applicabile>"}
+}
+Analizza: texture pelle, capelli, occhi, simmetria, sfondo, illuminazione, artefatti Midjourney/DALL-E/SD/Flux, bordi, imperfezioni, rumore sensore, aberrazioni cromatiche.`;
+
+  const response=await fetch('/api/analyze',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({imageBase64:currentBase64,mimeType:mime,prompt})
+  });
+  if(!response.ok){const err=await response.json().catch(()=>({}));throw new Error(err.error||`HTTP ${response.status}`);}
+  return await response.json();
+}
+
+// ── ELA ────────────────────────────────────────────────────────
+function analyzeELA(imgData,w,h){
+  const data=imgData.data,blockSize=16,blockVars=[];
+  for(let by=0;by<h-blockSize;by+=blockSize){
+    for(let bx=0;bx<w-blockSize;bx+=blockSize){
+      let sum=0,sum2=0,count=0;
+      for(let dy=0;dy<blockSize;dy++)for(let dx=0;dx<blockSize;dx++){const idx=((by+dy)*w+(bx+dx))*4;const lum=0.299*data[idx]+0.587*data[idx+1]+0.114*data[idx+2];sum+=lum;sum2+=lum*lum;count++;}
+      const mean=sum/count;blockVars.push((sum2/count)-mean*mean);
+    }
   }
+  if(!blockVars.length)return{score:30,anomaly:false};
+  blockVars.sort((a,b)=>a-b);
+  const q75=blockVars[Math.floor(blockVars.length*0.75)],q25=blockVars[Math.floor(blockVars.length*0.25)];
+  const flat=blockVars.filter(v=>v<4).length/blockVars.length;
+  const out=blockVars.filter(v=>v>q75+3*(q75-q25)).length/blockVars.length;
+  let score=15;
+  if(flat>0.45)score+=Math.round(flat*45);
+  if(out>0.06)score+=Math.round(out*180);
+  return{score:Math.max(5,Math.min(90,score)),anomaly:score>50};
+}
 
-  function analyzeELA(imgData,w,h){
-    const data=imgData.data,blockSize=16,blockVars=[];
-    for(let by=0;by<h-blockSize;by+=blockSize){
-      for(let bx=0;bx<w-blockSize;bx+=blockSize){
-        let sum=0,sum2=0,count=0;
-        for(let dy=0;dy<blockSize;dy++)for(let dx=0;dx<blockSize;dx++){const idx=((by+dy)*w+(bx+dx))*4;const lum=0.299*data[idx]+0.587*data[idx+1]+0.114*data[idx+2];sum+=lum;sum2+=lum*lum;count++;}
-        const mean=sum/count;blockVars.push((sum2/count)-mean*mean);
+// ── ELA VISUAL MAP ─────────────────────────────────────────────
+function renderELAMap(imgData,w,h){
+  const blockSize=16;
+  const dispCanvas=document.getElementById('elaDisplay');
+  dispCanvas.width=w;dispCanvas.height=h;
+  const ctx=dispCanvas.getContext('2d');
+  ctx.drawImage(document.getElementById('previewImg'),0,0);
+  const data=imgData.data;
+  for(let by=0;by<h-blockSize;by+=blockSize){
+    for(let bx=0;bx<w-blockSize;bx+=blockSize){
+      let sum=0,sum2=0,count=0;
+      for(let dy=0;dy<blockSize;dy++)for(let dx=0;dx<blockSize;dx++){const idx=((by+dy)*w+(bx+dx))*4;const lum=0.299*data[idx]+0.587*data[idx+1]+0.114*data[idx+2];sum+=lum;sum2+=lum*lum;count++;}
+      const mean=sum/count;const variance=(sum2/count)-mean*mean;
+      if(variance>800){
+        const intensity=Math.min(1,(variance-800)/3000);
+        ctx.fillStyle=`rgba(255,62,108,${intensity*0.55})`;
+        ctx.fillRect(bx,by,blockSize,blockSize);
+      }else if(variance<3){
+        ctx.fillStyle='rgba(77,159,255,0.35)';
+        ctx.fillRect(bx,by,blockSize,blockSize);
       }
     }
-    if(!blockVars.length)return{score:30,anomaly:false};
-    blockVars.sort((a,b)=>a-b);
-    const q25=blockVars[Math.floor(blockVars.length*0.25)],q75=blockVars[Math.floor(blockVars.length*0.75)],iqr=q75-q25;
-    const flat=blockVars.filter(v=>v<4).length/blockVars.length;
-    const out=blockVars.filter(v=>v>q75+3*iqr).length/blockVars.length;
-    let score=15;
-    if(flat>0.45)score+=Math.round(flat*45);
-    if(out>0.06)score+=Math.round(out*180);
-    return{score:Math.max(5,Math.min(90,score)),anomaly:score>50};
   }
+  document.getElementById('elaWrap').style.display='block';
+}
 
-  function analyzeFileSignature(file,img){
-    const ext=file.name.split('.').pop().toLowerCase(),mime=file.type;
-    let score=15,anomaly=false,msg='Metadati nella norma';
-    const mimeMap={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',gif:'image/gif',bmp:'image/bmp'};
-    if(mimeMap[ext]&&mimeMap[ext]!==mime){score+=30;anomaly=true;msg='Mismatch estensione/MIME';}
-    const mp=(img.naturalWidth*img.naturalHeight)/1e6;
-    if(file.size/(mp*300*1024)<0.12&&mime==='image/jpeg'){score+=20;msg='File size anomalo per risoluzione';}
-    const aiRes=[[512,512],[768,768],[1024,1024],[512,768],[768,512],[1024,768],[768,1024],[832,1216],[1216,832],[1344,768],[768,1344]];
-    if(aiRes.some(([aw,ah])=>img.naturalWidth===aw&&img.naturalHeight===ah)){score+=25;anomaly=true;msg=`Risoluzione ${img.naturalWidth}x${img.naturalHeight} tipica AI`;}
-    if(mime==='image/png'&&mp>2)score+=8;
-    return{score:Math.max(5,Math.min(90,Math.round(score))),anomaly,msg};
-  }
+// ── FILE SIGNATURE ─────────────────────────────────────────────
+function analyzeFileSignature(file,img){
+  const ext=file.name.split('.').pop().toLowerCase(),mime=file.type;
+  let score=15,anomaly=false,msg='Metadati nella norma';
+  const mimeMap={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',gif:'image/gif',bmp:'image/bmp'};
+  if(mimeMap[ext]&&mimeMap[ext]!==mime){score+=30;anomaly=true;msg='Mismatch estensione/MIME';}
+  const mp=(img.naturalWidth*img.naturalHeight)/1e6;
+  if(file.size/(mp*300*1024)<0.12&&mime==='image/jpeg'){score+=20;msg='File size anomalo per risoluzione';}
+  const aiRes=[[512,512],[768,768],[1024,1024],[512,768],[768,512],[1024,768],[768,1024],[832,1216],[1216,832],[1344,768],[768,1344]];
+  if(aiRes.some(([aw,ah])=>img.naturalWidth===aw&&img.naturalHeight===ah)){score+=25;anomaly=true;msg=`Risoluzione ${img.naturalWidth}x${img.naturalHeight} tipica AI`;}
+  if(mime==='image/png'&&mp>2)score+=8;
+  return{score:Math.max(5,Math.min(90,Math.round(score))),anomaly,msg};
+}
 
-  function analyzeLSB(imgData){
-    const data=imgData.data,totalPx=data.length/4,step=Math.max(4,Math.floor(totalPx/40000))*4;
-    let lsbZ=0;const rV=[],gV=[],bV=[];
-    for(let i=0;i<data.length;i+=step){lsbZ+=(data[i]&1)===0?1:0;rV.push(data[i]);gV.push(data[i+1]);bV.push(data[i+2]);}
-    const n=rV.length,bias=Math.abs((lsbZ/n)-0.5);
-    let crossDiff=0;for(let i=0;i<n;i++)crossDiff+=Math.abs(rV[i]-gV[i])+Math.abs(rV[i]-bV[i]);
-    const avgCross=crossDiff/n,meanR=rV.reduce((s,v)=>s+v,0)/n,varR=rV.reduce((s,v)=>s+(v-meanR)**2,0)/n;
-    let score=12;
-    if(bias<0.008)score+=20;else if(bias<0.018)score+=8;
-    if(avgCross<8)score+=18;else if(avgCross<14)score+=7;
-    if(varR<350)score+=12;
-    const anomaly=score>48;
-    return{score:Math.max(5,Math.min(88,Math.round(score))),anomaly,msg:anomaly?`LSB anomalo (bias: ${(bias*100).toFixed(1)}%)`:`LSB nella norma (bias: ${(bias*100).toFixed(1)}%)`};
-  }
+// ── LSB ────────────────────────────────────────────────────────
+function analyzeLSB(imgData){
+  const data=imgData.data,totalPx=data.length/4,step=Math.max(4,Math.floor(totalPx/40000))*4;
+  let lsbZ=0;const rV=[],gV=[],bV=[];
+  for(let i=0;i<data.length;i+=step){lsbZ+=(data[i]&1)===0?1:0;rV.push(data[i]);gV.push(data[i+1]);bV.push(data[i+2]);}
+  const n=rV.length,bias=Math.abs((lsbZ/n)-0.5);
+  let crossDiff=0;for(let i=0;i<n;i++)crossDiff+=Math.abs(rV[i]-gV[i])+Math.abs(rV[i]-bV[i]);
+  const avgCross=crossDiff/n,meanR=rV.reduce((s,v)=>s+v,0)/n,varR=rV.reduce((s,v)=>s+(v-meanR)**2,0)/n;
+  let score=12;
+  if(bias<0.008)score+=20;else if(bias<0.018)score+=8;
+  if(avgCross<8)score+=18;else if(avgCross<14)score+=7;
+  if(varR<350)score+=12;
+  const anomaly=score>48;
+  return{score:Math.max(5,Math.min(88,Math.round(score))),anomaly,msg:anomaly?`LSB anomalo (bias: ${(bias*100).toFixed(1)}%)`:`LSB nella norma (bias: ${(bias*100).toFixed(1)}%)`};
+}
 
-  function computeEnsemble(results){
-    const fs=Math.round(results.vision.fakeScore*0.60+results.ela.score*0.15+results.exif.score*0.13+results.lsb.score*0.12);
-    let verdict,confidence,cls;
-    if(fs>=65){verdict='PROBABILMENTE ARTIFICIALE';cls='fake';confidence=`${fs}% probabilità AI/manipolazione`;}
-    else if(fs>=40){verdict='INCERTA / AMBIGUA';cls='uncertain';confidence=`Evidenze non conclusive (score: ${fs}%)`;}
-    else{verdict='PROBABILMENTE AUTENTICA';cls='real';confidence=`${100-fs}% probabilità di autenticità`;}
-    return{fakeScore:fs,verdict,confidence,cls};
-  }
-
-  function updateMetadata(img){
-    const file=currentFile,w=img.naturalWidth,h=img.naturalHeight;
-    const gcd=(a,b)=>b?gcd(b,a%b):a;const g=gcd(w,h);
-    const entropy=currentImageData?calcEntropy(currentImageData):'---';
-    document.getElementById('mFile').textContent=file.name.length>22?file.name.slice(0,22)+'…':file.name;
-    document.getElementById('mSize').textContent=formatBytes(file.size);
-    document.getElementById('mRes').textContent=`${w} × ${h} px`;
-    document.getElementById('mCh').textContent='RGB (+ Alpha)';
-    document.getElementById('mExif').textContent=file.type==='image/jpeg'?'Possibile':'Non atteso';
-    document.getElementById('mMime').textContent=file.type||'sconosciuto';
-    document.getElementById('mAr').textContent=`${w/g}:${h/g}`;
-    document.getElementById('mEnt').textContent=entropy+' bit';
-  }
-
-  function calcEntropy(imgData){
-    const data=imgData.data,freq=new Array(256).fill(0),n=data.length/4;
-    for(let i=0;i<data.length;i+=4)freq[Math.round(0.299*data[i]+0.587*data[i+1]+0.114*data[i+2])]++;
-    let e=0;for(const f of freq)if(f>0){const p=f/n;e-=p*Math.log2(p);}return e.toFixed(3);
-  }
-
-  function updateModules(results){
-    const v=results.vision,ki=v.keyIndicators||{};
-    const m1s=v.fakeScore;
-    setModule('mod1','mod1v','mod1d',m1s>65?'ALTO':m1s>40?'MEDIO':'BASSO',m1s>65?'alert-high':m1s>40?'alert-med':'alert-low',v.aiGenerator&&v.aiGenerator!=='nessuno'&&v.aiGenerator!=='sconosciuto'?`Generatore: ${v.aiGenerator}`:v.summary||'Nessun artefatto AI');
-    const m2s=results.ela.score,lightOk=ki.lighting==='coerente',edgeOk=ki.edges==='naturali';
-    setModule('mod2','mod2v','mod2d',(!lightOk||!edgeOk)?'ANOMALIE':m2s>50?'SOSPETTO':'NORMALE',(!lightOk||!edgeOk)||m2s>55?'alert-high':m2s>35?'alert-med':'alert-low',`Luce: ${ki.lighting||'n/d'} · Bordi: ${ki.edges||'n/d'}`);
-    const m3s=results.lsb.score,hasManip=v.manipulationType&&v.manipulationType!=='nessuna';
-    setModule('mod3','mod3v','mod3d',hasManip?'RILEVATA':m3s>48?'SOSPETTA':'NON RILEVATA',hasManip||m3s>55?'alert-high':m3s>35?'alert-med':'alert-low',hasManip?`Tipo: ${v.manipulationType}`:results.lsb.msg);
-    const m4s=results.exif.score,gen=v.aiGenerator;
-    setModule('mod4','mod4v','mod4d',m4s>60||gen&&gen!=='nessuno'?'AI / SYNTH':m4s>35?'INCERTA':'CAMERA',m4s>60?'alert-high':m4s>35?'alert-med':'alert-low',gen&&gen!=='nessuno'&&gen!=='sconosciuto'?`Sospetto: ${gen}`:results.exif.msg);
-  }
-
-  function setModule(mId,vId,dId,value,alertClass,desc){
-    const m=document.getElementById(mId);m.className=`module ${alertClass}`;
-    document.getElementById(vId).textContent=value;document.getElementById(dId).textContent=desc;
-  }
-
-  function showVerdict(ensemble,vision){
-    document.getElementById('verdictIdle').style.display='none';
-    const vc=document.getElementById('verdictContent');vc.style.display='flex';vc.style.alignItems='center';vc.style.gap='20px';vc.style.width='100%';
-    document.getElementById('verdictIcon').textContent={real:'✓',fake:'⚠',uncertain:'?'}[ensemble.cls]||'?';
-    document.getElementById('verdictValue').textContent=ensemble.verdict;
-    let conf=ensemble.confidence;
-    if(vision&&vision.findings&&vision.findings.length>0)conf+=' · '+vision.findings[0];
-    document.getElementById('verdictConf').textContent=conf;
-    document.getElementById('verdictBox').className=`verdict-box ${ensemble.cls}`;
-  }
-
-  // ─── PDF REPORT ───────────────────────────────────────────────
-  async function downloadPDF(){
-    if(!lastResults||!currentFile)return;
-    const btn=document.getElementById('btnPdf');
-    btn.disabled=true;btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> GENERANDO...';
-
-    try{
-      const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-      const W=210,M=18,cW=W-M*2;
-      let y=M;
-
-      // ── SFONDO ──
-      // Sfondo bianco
-      doc.setFillColor(255,255,255);doc.rect(0,0,W,297,'F');
-
-      // ── HEADER ──
-      doc.setFillColor(15,23,42);doc.rect(0,0,W,38,'F');
-      doc.setDrawColor(0,180,100);doc.setLineWidth(0.5);doc.line(0,38,W,38);
-      doc.setFont('helvetica','bold');doc.setFontSize(22);doc.setTextColor(255,255,255);
-      doc.text('DEEP ANALYSIS',M,22);
-      doc.setFont('courier','normal');doc.setFontSize(7);doc.setTextColor(0,220,140);
-      doc.text('AI FORENSICS ENGINE v2.0',M,30);
-      doc.setTextColor(148,163,184);
-      doc.text(`REPORT GENERATO: ${analysisDate.toLocaleString('it-IT')}`,W-M,30,{align:'right'});
-      y=48;
-
-      // ── FILE INFO ──
-      doc.setFont('courier','normal');doc.setFontSize(7);doc.setTextColor(30,100,200);
-      doc.text('▸ FILE ANALIZZATO',M,y);y+=6;
-      doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,y,W-M,y);y+=5;
-      doc.setTextColor(30,41,59);doc.setFontSize(8);
-      const img=document.getElementById('previewImg');
-      const infoRows=[
-        ['File',currentFile.name],['Dimensione',formatBytes(currentFile.size)],
-        ['Risoluzione',`${img.naturalWidth} x ${img.naturalHeight} px`],['Tipo MIME',currentFile.type||'sconosciuto'],
-        ['Rapporto aspetto',document.getElementById('mAr').textContent],['Entropia',document.getElementById('mEnt').textContent]
-      ];
-      for(const [k,v] of infoRows){
-        doc.setTextColor(100,116,139);doc.setFontSize(7);doc.text(k,M,y);
-        doc.setTextColor(15,23,42);doc.text(String(v),M+42,y);y+=5.5;
+// ── COPY-MOVE DETECTION ────────────────────────────────────────
+function analyzeCopyMove(imgData,w,h){
+  const data=imgData.data;
+  const blockSize=32,step=16;
+  const blocks=[];
+  for(let by=0;by<=h-blockSize;by+=step){
+    for(let bx=0;bx<=w-blockSize;bx+=step){
+      let r=0,g=0,b=0,rr=0,gg=0,bb=0,n=0;
+      for(let dy=0;dy<blockSize;dy+=4)for(let dx=0;dx<blockSize;dx+=4){
+        const idx=((by+dy)*w+(bx+dx))*4;
+        r+=data[idx];g+=data[idx+1];b+=data[idx+2];
+        rr+=data[idx]*data[idx];gg+=data[idx+1]*data[idx+1];bb+=data[idx+2]*data[idx+2];n++;
       }
-      y+=4;
+      blocks.push({x:bx,y:by,r:r/n,g:g/n,b:b/n,vr:rr/n-(r/n)**2,vg:gg/n-(g/n)**2,vb:bb/n-(b/n)**2});
+    }
+  }
+  let suspiciousPairs=0;
+  const threshold=8;
+  for(let i=0;i<blocks.length;i++){
+    for(let j=i+1;j<Math.min(i+50,blocks.length);j++){
+      const a=blocks[i],b2=blocks[j];
+      const dist=Math.sqrt((a.x-b2.x)**2+(a.y-b2.y)**2);
+      if(dist<blockSize*2)continue;
+      const colorDiff=Math.abs(a.r-b2.r)+Math.abs(a.g-b2.g)+Math.abs(a.b-b2.b);
+      const varDiff=Math.abs(a.vr-b2.vr)+Math.abs(a.vg-b2.vg)+Math.abs(a.vb-b2.vb);
+      if(colorDiff<threshold&&varDiff<50)suspiciousPairs++;
+    }
+  }
+  const ratio=suspiciousPairs/Math.max(1,blocks.length);
+  let score=10;
+  if(ratio>0.15)score+=Math.round(ratio*120);
+  if(ratio>0.3)score+=20;
+  const anomaly=score>50;
+  return{score:Math.max(5,Math.min(90,Math.round(score))),anomaly,msg:anomaly?`Possibili regioni duplicate (${suspiciousPairs} coppie sospette)`:`Nessuna duplicazione rilevata`};
+}
 
-      // ── VERDETTO ──
-      const ens=lastResults.ensemble;
-      const verdictColors={real:[0,255,157],fake:[255,62,108],uncertain:[246,201,14]};
-      const vc=verdictColors[ens.cls]||[200,214,229];
-      doc.setFillColor(248,250,252);doc.setDrawColor(...vc);doc.setLineWidth(0.6);
-      doc.roundedRect(M,y,cW,22,2,2,'FD');
-      doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(...vc);
-      doc.text(ens.verdict,M+8,y+10);
-      doc.setFont('courier','normal');doc.setFontSize(7);doc.setTextColor(100,116,139);
-      doc.text(ens.confidence,M+8,y+17);
-      // Score circle
-      doc.setFillColor(...vc);doc.circle(W-M-12,y+11,8,'F');
-      doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(8,12,16);
-      doc.text(`${ens.fakeScore}%`,W-M-12,y+13.5,{align:'center'});
-      doc.setFont('courier','normal');doc.setFontSize(6);doc.setTextColor(74,85,104);
-      doc.text('SCORE',W-M-12,y+19.5,{align:'center'});
-      y+=28;
+// ── ENSEMBLE ──────────────────────────────────────────────────
+function computeEnsemble(results){
+  const visionAvg=Math.round((results.vision.fakeScore+results.vision2.fakeScore)/2);
+  const fs=Math.round(visionAvg*0.55+results.ela.score*0.13+results.exif.score*0.11+results.lsb.score*0.11+results.copyMove.score*0.10);
+  let verdict,confidence,cls;
+  if(fs>=65){verdict='PROBABILMENTE ARTIFICIALE';cls='fake';confidence=`${fs}% probabilità AI/manipolazione`;}
+  else if(fs>=40){verdict='INCERTA / AMBIGUA';cls='uncertain';confidence=`Evidenze non conclusive (score: ${fs}%)`;}
+  else{verdict='PROBABILMENTE AUTENTICA';cls='real';confidence=`${100-fs}% probabilità di autenticità`;}
+  return{fakeScore:fs,verdict,confidence,cls,visionAvg};
+}
 
-      // ── SCORES MODULI ──
-      doc.setFont('courier','normal');doc.setFontSize(7);doc.setTextColor(30,100,200);
-      doc.text('▸ ANALISI MULTI-MODELLO',M,y);y+=6;
-      doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,y,W-M,y);y+=5;
-      const bars=[
-        ['Claude Vision AI',lastResults.vision.fakeScore,[0,255,157]],
-        ['Error Level Analysis',lastResults.ela.score,[255,62,108]],
-        ['Metadati & EXIF',lastResults.exif.score,[77,159,255]],
-        ['Pattern LSB',lastResults.lsb.score,[246,201,14]],
-        ['Score Ensemble',ens.fakeScore,[0,255,157]]
-      ];
-      for(const [label,score,color] of bars){
-        doc.setTextColor(15,23,42);doc.setFontSize(7);doc.text(label,M,y);
-        doc.setTextColor(100,116,139);doc.text(`${score}%`,W-M,y,{align:'right'});
-        doc.setFillColor(226,232,240);doc.roundedRect(M,y+2,cW,3,1,1,'F');
-        doc.setFillColor(...color);doc.roundedRect(M,y+2,(cW*score/100),3,1,1,'F');
-        y+=9;
-      }
-      y+=3;
+function updateMetadata(img){
+  const file=currentFile,w=img.naturalWidth,h=img.naturalHeight;
+  const gcd=(a,b)=>b?gcd(b,a%b):a;const g=gcd(w,h);
+  const entropy=currentImageData?calcEntropy(currentImageData):'---';
+  document.getElementById('mFile').textContent=file.name.length>22?file.name.slice(0,22)+'…':file.name;
+  document.getElementById('mSize').textContent=formatBytes(file.size);
+  document.getElementById('mRes').textContent=`${w} x ${h} px`;
+  document.getElementById('mCh').textContent='RGB (+ Alpha)';
+  document.getElementById('mExif').textContent=file.type==='image/jpeg'?'Possibile':'Non atteso';
+  document.getElementById('mMime').textContent=file.type||'sconosciuto';
+  document.getElementById('mAr').textContent=`${w/g}:${h/g}`;
+  document.getElementById('mEnt').textContent=entropy+' bit';
+}
 
-      // ── INDICATORI CHIAVE ──
-      doc.setFont('courier','normal');doc.setFontSize(7);doc.setTextColor(30,100,200);
-      doc.text('▸ INDICATORI CHIAVE',M,y);y+=6;
-      doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,y,W-M,y);y+=5;
-      const ki=lastResults.vision.keyIndicators||{};
-      const indicators=[
-        ['Texture',ki.texture||'n/d'],['Illuminazione',ki.lighting||'n/d'],
-        ['Bordi',ki.edges||'n/d'],['Rumore',ki.noise||'n/d'],['Anatomia',ki.anatomy||'n/d']
-      ];
-      const colW=cW/indicators.length;
-      for(let i=0;i<indicators.length;i++){
-        const [k,v]=indicators[i];const x=M+i*colW;
-        doc.setFillColor(248,250,252);doc.setDrawColor(210,218,228);doc.setLineWidth(0.2);
-        doc.roundedRect(x,y,colW-2,16,1,1,'FD');
-        doc.setFont('courier','normal');doc.setFontSize(6);doc.setTextColor(100,116,139);
-        doc.text(k.toUpperCase(),x+colW/2-1,y+6,{align:'center'});
-        const isOk=['naturale','coerente','naturali','corretta'].includes(v);
-        const isWarn=['sintetica','incoerente','artificiali','artificiale','sovra-nitidi','anomalie rilevate'].includes(v);
-        doc.setTextColor(isOk?0:isWarn?255:200,isOk?255:isWarn?62:214,isOk?157:isWarn?108:229);
-        doc.setFontSize(7);doc.setFont('helvetica','bold');
-        doc.text(v,x+colW/2-1,y+12,{align:'center'});
-      }
-      y+=22;
+function calcEntropy(imgData){
+  const data=imgData.data,freq=new Array(256).fill(0),n=data.length/4;
+  for(let i=0;i<data.length;i+=4)freq[Math.round(0.299*data[i]+0.587*data[i+1]+0.114*data[i+2])]++;
+  let e=0;for(const f of freq)if(f>0){const p=f/n;e-=p*Math.log2(p);}return e.toFixed(3);
+}
 
-      // ── OSSERVAZIONI FORENSI ──
-      if(lastResults.vision.findings&&lastResults.vision.findings.length>0){
-        doc.setFont('courier','normal');doc.setFontSize(7);doc.setTextColor(30,100,200);
-        doc.text('▸ OSSERVAZIONI FORENSI (Claude Vision AI)',M,y);y+=6;
-        doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,y,W-M,y);y+=5;
-        for(let i=0;i<lastResults.vision.findings.length;i++){
-          const finding=lastResults.vision.findings[i];
-          doc.setFillColor(240,253,248);doc.setDrawColor(0,180,100);doc.setLineWidth(0.2);
-          const lines=doc.splitTextToSize(`${i+1}. ${finding}`,cW-8);
-          const boxH=lines.length*4.5+5;
-          doc.roundedRect(M,y,cW,boxH,1,1,'FD');
-          doc.setTextColor(15,23,42);doc.setFontSize(7);doc.setFont('courier','normal');
-          doc.text(lines,M+4,y+4.5);
-          y+=boxH+3;
-        }
-      }
+function updateModules(results){
+  const v=results.vision,ki=v.keyIndicators||{};
+  const m1s=Math.round((results.vision.fakeScore+results.vision2.fakeScore)/2);
+  setModule('mod1','mod1v','mod1d',m1s>65?'ALTO':m1s>40?'MEDIO':'BASSO',m1s>65?'alert-high':m1s>40?'alert-med':'alert-low',v.aiGenerator&&v.aiGenerator!=='nessuno'?`Generatore: ${v.aiGenerator}`:v.summary||'Nessun artefatto AI');
+  const m2s=results.ela.score,lightOk=ki.lighting==='coerente',edgeOk=ki.edges==='naturali';
+  setModule('mod2','mod2v','mod2d',(!lightOk||!edgeOk)?'ANOMALIE':m2s>50?'SOSPETTO':'NORMALE',(!lightOk||!edgeOk)||m2s>55?'alert-high':m2s>35?'alert-med':'alert-low',`Luce: ${ki.lighting||'n/d'} · Bordi: ${ki.edges||'n/d'}`);
+  const m3s=results.lsb.score,hasManip=v.manipulationType&&v.manipulationType!=='nessuna';
+  const cmScore=results.copyMove.score;
+  setModule('mod3','mod3v','mod3d',hasManip||cmScore>55?'RILEVATA':m3s>48?'SOSPETTA':'NON RILEVATA',hasManip||cmScore>55||m3s>55?'alert-high':m3s>35?'alert-med':'alert-low',hasManip?`Tipo: ${v.manipulationType}`:results.copyMove.msg);
+  const m4s=results.exif.score,gen=v.aiGenerator;
+  setModule('mod4','mod4v','mod4d',m4s>60||gen&&gen!=='nessuno'?'AI / SYNTH':m4s>35?'INCERTA':'CAMERA',m4s>60?'alert-high':m4s>35?'alert-med':'alert-low',gen&&gen!=='nessuno'&&gen!=='sconosciuto'?`Sospetto: ${gen}`:results.exif.msg);
+}
 
-      // ── GENERATORE AI ──
-      if(lastResults.vision.aiGenerator&&lastResults.vision.aiGenerator!=='nessuno'&&lastResults.vision.aiGenerator!=='sconosciuto'){
-        y+=2;
-        doc.setFillColor(255,241,242);doc.setDrawColor(220,38,38);doc.setLineWidth(0.4);
-        doc.roundedRect(M,y,cW,14,2,2,'FD');
-        doc.setFont('courier','normal');doc.setFontSize(7);doc.setTextColor(185,28,28);
-        doc.text('GENERATORE AI RILEVATO',M+4,y+6);
-        doc.setTextColor(15,23,42);doc.setFontSize(9);doc.setFont('helvetica','bold');
-        doc.text(lastResults.vision.aiGenerator,M+4,y+11);
-        y+=18;
-      }
+function setModule(mId,vId,dId,value,alertClass,desc){
+  const m=document.getElementById(mId);m.className=`module ${alertClass}`;
+  document.getElementById(vId).textContent=value;document.getElementById(dId).textContent=desc;
+}
 
-      // ── FOOTER ──
-      doc.setDrawColor(200,210,225);doc.setLineWidth(0.3);doc.line(M,280,W-M,280);
+function showVerdict(ensemble,vision1,vision2){
+  document.getElementById('verdictIdle').style.display='none';
+  document.getElementById('verdictContent').style.display='block';
+  document.getElementById('verdictIcon').textContent={real:'✓',fake:'⚠',uncertain:'?'}[ensemble.cls]||'?';
+  document.getElementById('verdictValue').textContent=ensemble.verdict;
+  let conf=ensemble.confidence;
+  if(vision1&&vision1.findings&&vision1.findings.length>0)conf+=' · '+vision1.findings[0];
+  document.getElementById('verdictConf').textContent=conf;
+  document.getElementById('verdictBox').className=`verdict-box ${ensemble.cls}`;
+  // Double check badge
+  const diff=Math.abs(vision1.fakeScore-vision2.fakeScore);
+  const agree=diff<=20;
+  const badge=document.getElementById('doubleCheckBadge');
+  badge.innerHTML=`<span class="double-check ${agree?'agree':'disagree'}">${agree?`✓ DOPPIO PASSAGGIO CONCORDE (Δ${diff}%)`:`⚠ PASSAGGI DISCORDANTI (Δ${diff}%) — INCERTEZZA ELEVATA`}</span>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// PDF REPORT v3.0 — con copertina SHA-256 + timestamp
+// ══════════════════════════════════════════════════════════════
+async function downloadPDF(){
+  if(!lastResults||!currentFile)return;
+  const btn=document.getElementById('btnPdf');
+  btn.disabled=true;
+  btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> GENERANDO...';
+
+  try{
+    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const W=210,M=18,cW=W-M*2;
+
+    // ════════════════════════════════════════════
+    // PAGINA 1 — COPERTINA
+    // ════════════════════════════════════════════
+    // Sfondo bianco con fascia header
+    doc.setFillColor(255,255,255);doc.rect(0,0,W,297,'F');
+
+    // Fascia header scura
+    doc.setFillColor(15,23,42);doc.rect(0,0,W,80,'F');
+
+    // Linea accent verde
+    doc.setDrawColor(0,200,120);doc.setLineWidth(1);doc.line(0,80,W,80);
+
+    // Titolo
+    doc.setFont('helvetica','bold');doc.setFontSize(36);doc.setTextColor(255,255,255);
+    doc.text('DEEP ANALYSIS',W/2,38,{align:'center'});
+    doc.setFont('courier','normal');doc.setFontSize(9);doc.setTextColor(0,220,140);
+    doc.text('AI FORENSICS ENGINE  v3.0',W/2,50,{align:'center'});
+    doc.setTextColor(100,116,139);doc.setFontSize(8);
+    doc.text('RAPPORTO DI ANALISI FORENSE DIGITALE',W/2,60,{align:'center'});
+
+    // Decorative line
+    doc.setDrawColor(0,200,120);doc.setLineWidth(0.3);
+    doc.line(M+20,68,W-M-20,68);
+
+    // Data e ora nella fascia header
+    doc.setTextColor(148,163,184);doc.setFontSize(7.5);
+    doc.text(`Data analisi: ${analysisDate.toLocaleString('it-IT',{weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'})}`,W/2,75,{align:'center'});
+
+    // ── SHA-256 BOX ──
+    let y=100;
+    doc.setFillColor(240,253,248);doc.setDrawColor(0,180,100);doc.setLineWidth(0.5);
+    doc.roundedRect(M,y,cW,30,3,3,'FD');
+    doc.setFont('courier','bold');doc.setFontSize(7.5);doc.setTextColor(0,120,70);
+    doc.text('IMPRONTA DIGITALE SHA-256 — FILE ANALIZZATO',M+6,y+8);
+    doc.setDrawColor(0,180,100);doc.setLineWidth(0.2);doc.line(M+6,y+11,M+cW-6,y+11);
+    doc.setFont('courier','normal');doc.setFontSize(8);doc.setTextColor(15,23,42);
+    const sha=fileSHA256||'Non disponibile';
+    // Split SHA in due righe da 32 chars
+    doc.text(sha.slice(0,32),M+6,y+18);
+    doc.text(sha.slice(32),M+6,y+24);
+    y+=38;
+
+    // ── FILE INFO ──
+    doc.setFont('courier','bold');doc.setFontSize(8);doc.setTextColor(30,100,200);
+    doc.text('FILE ANALIZZATO',M,y);y+=5;
+    doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,y,W-M,y);y+=6;
+    const img=document.getElementById('previewImg');
+    const infoRows=[
+      ['Nome file',currentFile.name],
+      ['Dimensione',formatBytes(currentFile.size)],
+      ['Risoluzione',`${img.naturalWidth} x ${img.naturalHeight} px`],
+      ['Tipo MIME',currentFile.type||'sconosciuto'],
+      ['Rapporto aspetto',document.getElementById('mAr').textContent],
+      ['Entropia',document.getElementById('mEnt').textContent],
+      ['Canali colore','RGB (+ Alpha)'],
+    ];
+    for(const [k,v] of infoRows){
+      doc.setFont('courier','normal');doc.setFontSize(7.5);
+      doc.setTextColor(100,116,139);doc.text(k,M,y);
+      doc.setTextColor(15,23,42);doc.text(String(v),M+44,y);y+=5.5;
+    }
+    y+=6;
+
+    // ── METODOLOGIA ──
+    doc.setFont('courier','bold');doc.setFontSize(8);doc.setTextColor(30,100,200);
+    doc.text('METODOLOGIA DI ANALISI',M,y);y+=5;
+    doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,y,W-M,y);y+=6;
+    const methods=[
+      ['Claude Vision AI (x2)','Analisi visiva indipendente in doppio passaggio con prompt differenziati. Peso ensemble: 55%'],
+      ['Error Level Analysis','Rilevamento incoerenze di compressione JPEG per identificare zone manipolate. Peso: 13%'],
+      ['Metadati & EXIF','Analisi firma file, risoluzione, rapporto dimensione/pixel, mismatch MIME. Peso: 11%'],
+      ['Pattern LSB','Analisi distribuzione bit meno significativi e correlazione inter-canale. Peso: 11%'],
+      ['Copy-Move Detection','Ricerca di regioni duplicate all\'interno dell\'immagine. Peso: 10%'],
+    ];
+    for(const [name,desc] of methods){
+      doc.setFont('courier','bold');doc.setFontSize(7);doc.setTextColor(15,23,42);
+      doc.text(`• ${name}:`,M,y);
+      doc.setFont('courier','normal');doc.setTextColor(60,80,100);
+      const lines=doc.splitTextToSize(desc,cW-38);
+      doc.text(lines,M+38,y);
+      y+=lines.length*4.5+2;
+    }
+    y+=4;
+
+    // ── DISCLAIMER LEGALE ──
+    doc.setFillColor(255,247,230);doc.setDrawColor(200,150,0);doc.setLineWidth(0.3);
+    doc.roundedRect(M,y,cW,28,2,2,'FD');
+    doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(150,90,0);
+    doc.text('AVVERTENZA LEGALE',M+5,y+7);
+    doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(80,60,20);
+    const disclaimer='Il presente rapporto è prodotto da un sistema automatizzato di analisi probabilistica e NON costituisce perizia forense legalmente riconosciuta. I risultati hanno natura indicativa e non deterministica. Lo stesso file può produrre risultati leggermente diversi in analisi successive. Per uso legale, giudiziario o probatorio è necessario rivolgersi a un perito informatico forense certificato e iscritto all\'albo. L\'autore declina ogni responsabilità per decisioni prese sulla base esclusiva di questo documento.';
+    const dLines=doc.splitTextToSize(disclaimer,cW-10);
+    doc.text(dLines,M+5,y+13);
+    y+=32;
+
+    // Footer pag 1
+    doc.setDrawColor(200,210,225);doc.setLineWidth(0.3);doc.line(M,284,W-M,284);
+    doc.setFont('courier','normal');doc.setFontSize(6);doc.setTextColor(150,160,175);
+    doc.text('Deep Analysis v3.0 — Rapporto generato automaticamente',M,289);
+    doc.text('Pagina 1 di 3',W-M,289,{align:'right'});
+
+    // ════════════════════════════════════════════
+    // PAGINA 2 — RISULTATI ANALISI
+    // ════════════════════════════════════════════
+    doc.addPage();
+    doc.setFillColor(255,255,255);doc.rect(0,0,W,297,'F');
+    // Mini header
+    doc.setFillColor(15,23,42);doc.rect(0,0,W,16,'F');
+    doc.setFont('courier','bold');doc.setFontSize(7);doc.setTextColor(0,220,140);
+    doc.text('DEEP ANALYSIS v3.0',M,10);
+    doc.setTextColor(100,116,139);doc.text('RISULTATI ANALISI',W-M,10,{align:'right'});
+    y=26;
+
+    // VERDETTO
+    const ens=lastResults.ensemble;
+    const verdictColors={real:[0,160,90],fake:[200,40,60],uncertain:[180,140,0]};
+    const vc=verdictColors[ens.cls]||[100,100,100];
+    doc.setFillColor(248,250,252);doc.setDrawColor(...vc);doc.setLineWidth(0.8);
+    doc.roundedRect(M,y,cW,26,3,3,'FD');
+    doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(...vc);
+    doc.text(ens.verdict,M+8,y+12);
+    doc.setFont('courier','normal');doc.setFontSize(7);doc.setTextColor(100,116,139);
+    doc.text(ens.confidence,M+8,y+20);
+    // Score circle
+    doc.setFillColor(...vc);doc.circle(W-M-14,y+13,10,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(255,255,255);
+    doc.text(`${ens.fakeScore}%`,W-M-14,y+16,{align:'center'});
+    doc.setFont('courier','normal');doc.setFontSize(5.5);doc.setTextColor(255,255,255);
+    doc.text('SCORE',W-M-14,y+21,{align:'center'});
+    y+=32;
+
+    // DOUBLE CHECK
+    const diff=Math.abs(lastResults.vision.fakeScore-lastResults.vision2.fakeScore);
+    const agree=diff<=20;
+    doc.setFillColor(agree?240:255,agree?253:247,agree?248:230);
+    doc.setDrawColor(agree?0:180,agree?160:130,agree?90:0);doc.setLineWidth(0.3);
+    doc.roundedRect(M,y,cW,10,2,2,'FD');
+    doc.setFont('courier','normal');doc.setFontSize(7);doc.setTextColor(agree?0:150,agree?120:90,agree?70:0);
+    doc.text(`${agree?'✓ DOPPIO PASSAGGIO CONCORDE':'⚠ PASSAGGI DISCORDANTI'} — Delta: ${diff}% — Passaggio 1: ${lastResults.vision.fakeScore}% / Passaggio 2: ${lastResults.vision2.fakeScore}%`,M+5,y+6.5);
+    y+=16;
+
+    // SCORES MODULI
+    doc.setFont('courier','bold');doc.setFontSize(8);doc.setTextColor(30,100,200);
+    doc.text('ANALISI MULTI-MODELLO',M,y);y+=5;
+    doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,y,W-M,y);y+=6;
+    const bars=[
+      ['Claude Vision AI — Passaggio 1',lastResults.vision.fakeScore,[0,160,90]],
+      ['Claude Vision AI — Passaggio 2',lastResults.vision2.fakeScore,[0,160,90]],
+      ['Error Level Analysis (ELA)',lastResults.ela.score,[200,40,60]],
+      ['Metadati & EXIF',lastResults.exif.score,[40,100,200]],
+      ['Pattern Statistici (LSB)',lastResults.lsb.score,[180,140,0]],
+      ['Copy-Move Detection',lastResults.copyMove.score,[200,40,60]],
+      ['Score Ensemble Combinato',ens.fakeScore,[0,120,80]],
+    ];
+    for(const [label,score,color] of bars){
+      const isBold=label.includes('Ensemble');
+      doc.setFont('courier',isBold?'bold':'normal');doc.setFontSize(7);doc.setTextColor(15,23,42);
+      doc.text(label,M,y);
+      doc.setTextColor(100,116,139);doc.text(`${score}%`,W-M,y,{align:'right'});
+      doc.setFillColor(226,232,240);doc.roundedRect(M,y+2,cW,isBold?4:3,1,1,'F');
+      doc.setFillColor(...color);doc.roundedRect(M,y+2,(cW*score/100),isBold?4:3,1,1,'F');
+      y+=isBold?11:9;
+    }
+    y+=4;
+
+    // INDICATORI CHIAVE
+    doc.setFont('courier','bold');doc.setFontSize(8);doc.setTextColor(30,100,200);
+    doc.text('INDICATORI CHIAVE',M,y);y+=5;
+    doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,y,W-M,y);y+=6;
+    const ki=lastResults.vision.keyIndicators||{};
+    const indicators=[['Texture',ki.texture||'n/d'],['Illuminazione',ki.lighting||'n/d'],['Bordi',ki.edges||'n/d'],['Rumore',ki.noise||'n/d'],['Anatomia',ki.anatomy||'n/d']];
+    const colW2=cW/indicators.length;
+    for(let i=0;i<indicators.length;i++){
+      const [k,v]=indicators[i];const x=M+i*colW2;
+      const isOk=['naturale','coerente','naturali','corretta'].includes(v);
+      const isWarn=['sintetica','incoerente','artificiali','artificiale','sovra-nitidi','anomalie rilevate'].includes(v);
+      const bColor=isOk?[240,253,248]:isWarn?[255,241,242]:[248,250,252];
+      const bBorder=isOk?[0,160,90]:isWarn?[200,40,60]:[200,210,225];
+      doc.setFillColor(...bColor);doc.setDrawColor(...bBorder);doc.setLineWidth(0.25);
+      doc.roundedRect(x,y,colW2-2,18,2,2,'FD');
       doc.setFont('courier','normal');doc.setFontSize(6);doc.setTextColor(100,116,139);
-      doc.text('Deep Analysis — AI Forensics Engine v2.0 · I risultati sono probabilistici e non sostituiscono una perizia professionale.',M,285);
-      doc.text('Generato da deepanalysis.vercel.app',W-M,285,{align:'right'});
-
-      // ── IMMAGINE ANALIZZATA (se non troppo grande) ──
-      if(currentBase64&&img.naturalWidth<=4000){
-        doc.addPage();
-        doc.setFillColor(255,255,255);doc.rect(0,0,W,297,'F');
-        doc.setFont('courier','normal');doc.setFontSize(8);doc.setTextColor(30,100,200);
-        doc.text('▸ IMMAGINE ANALIZZATA',M,M+4);
-        doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,M+8,W-M,M+8);
-        const maxW=cW,maxH=220;
-        const ratio=Math.min(maxW/img.naturalWidth,maxH/img.naturalHeight);
-        const dW=img.naturalWidth*ratio,dH=img.naturalHeight*ratio;
-        const xOff=M+(cW-dW)/2;
-        try{doc.addImage(document.getElementById('previewImg').src,'JPEG',xOff,M+12,dW,dH);}catch(e){}
-        doc.setFont('courier','normal');doc.setFontSize(6.5);doc.setTextColor(100,116,139);
-        doc.text(`${currentFile.name} · ${img.naturalWidth}×${img.naturalHeight}px · ${formatBytes(currentFile.size)}`,W/2,M+14+dH+6,{align:'center'});
-      }
-
-      const fname=`deep-analysis-${currentFile.name.replace(/\.[^.]+$/,'')}-${analysisDate.toISOString().slice(0,10)}.pdf`;
-      doc.save(fname);
-    }catch(err){
-      console.error('PDF error:',err);alert('Errore nella generazione del PDF: '+err.message);
+      doc.text(k.toUpperCase(),x+colW2/2-1,y+7,{align:'center'});
+      doc.setTextColor(...(isOk?[0,120,70]:isWarn?[180,30,50]:[30,41,59]));
+      doc.setFontSize(7.5);doc.setFont('helvetica','bold');
+      doc.text(v,x+colW2/2-1,y+14,{align:'center'});
     }
-    btn.disabled=false;
-    btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> PDF';
+    y+=24;
+
+    // OSSERVAZIONI FORENSI
+    doc.setFont('courier','bold');doc.setFontSize(8);doc.setTextColor(30,100,200);
+    doc.text('OSSERVAZIONI FORENSI — CLAUDE VISION AI',M,y);y+=5;
+    doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,y,W-M,y);y+=6;
+    const allFindings=[
+      ...(lastResults.vision.findings||[]).map(f=>`[P1] ${f}`),
+      ...(lastResults.vision2.findings||[]).map(f=>`[P2] ${f}`)
+    ];
+    for(let i=0;i<allFindings.length;i++){
+      const lines=doc.splitTextToSize(`${i+1}. ${allFindings[i]}`,cW-10);
+      const boxH=lines.length*4.5+6;
+      if(y+boxH>278){
+        doc.setFont('courier','normal');doc.setFontSize(6);doc.setTextColor(150,160,175);
+        doc.text(`[...continua — ${allFindings.length-i} osservazioni omesse per spazio]`,M,y+4);
+        break;
+      }
+      const isP2=allFindings[i].startsWith('[P2]');
+      doc.setFillColor(isP2?240:245,isP2?248:252,isP2?255:248);
+      doc.setDrawColor(isP2?77:0,isP2?159:160,isP2?255:90);doc.setLineWidth(0.2);
+      doc.roundedRect(M,y,cW,boxH,1,1,'FD');
+      doc.setTextColor(15,23,42);doc.setFontSize(7);doc.setFont('courier','normal');
+      doc.text(lines,M+5,y+4.5);y+=boxH+3;
+    }
+
+    // Copy-Move
+    if(lastResults.copyMove.anomaly){
+      doc.setFillColor(255,241,242);doc.setDrawColor(200,40,60);doc.setLineWidth(0.35);
+      doc.roundedRect(M,y,cW,12,2,2,'FD');
+      doc.setFont('courier','bold');doc.setFontSize(7);doc.setTextColor(160,20,40);
+      doc.text('COPY-MOVE RILEVATO: '+lastResults.copyMove.msg,M+5,y+8);y+=16;
+    }
+
+    // AI Generator
+    if(lastResults.vision.aiGenerator&&lastResults.vision.aiGenerator!=='nessuno'&&lastResults.vision.aiGenerator!=='sconosciuto'){
+      doc.setFillColor(255,241,242);doc.setDrawColor(200,40,60);doc.setLineWidth(0.4);
+      doc.roundedRect(M,y,cW,14,2,2,'FD');
+      doc.setFont('courier','bold');doc.setFontSize(7);doc.setTextColor(160,20,40);
+      doc.text('GENERATORE AI RILEVATO',M+5,y+6);
+      doc.setTextColor(15,23,42);doc.setFontSize(9);
+      doc.text(lastResults.vision.aiGenerator,M+5,y+12);y+=18;
+    }
+
+    // Footer pag 2
+    doc.setDrawColor(200,210,225);doc.setLineWidth(0.3);doc.line(M,284,W-M,284);
+    doc.setFont('courier','normal');doc.setFontSize(6);doc.setTextColor(150,160,175);
+    doc.text('Deep Analysis v3.0 — Rapporto generato automaticamente',M,289);
+    doc.text('Pagina 2 di 3',W-M,289,{align:'right'});
+
+    // ════════════════════════════════════════════
+    // PAGINA 3 — IMMAGINE + ELA MAP
+    // ════════════════════════════════════════════
+    doc.addPage();
+    doc.setFillColor(255,255,255);doc.rect(0,0,W,297,'F');
+    // Mini header
+    doc.setFillColor(15,23,42);doc.rect(0,0,W,16,'F');
+    doc.setFont('courier','bold');doc.setFontSize(7);doc.setTextColor(0,220,140);
+    doc.text('DEEP ANALYSIS v3.0',M,10);
+    doc.setTextColor(100,116,139);doc.text('MATERIALE VISIVO',W-M,10,{align:'right'});
+    y=24;
+
+    // Immagine originale
+    doc.setFont('courier','bold');doc.setFontSize(8);doc.setTextColor(30,100,200);
+    doc.text('IMMAGINE ANALIZZATA',M,y);y+=4;
+    doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,y,W-M,y);y+=4;
+    const maxW=cW,maxH=100;
+    const ratio=Math.min(maxW/img.naturalWidth,maxH/img.naturalHeight);
+    const dW=Math.round(img.naturalWidth*ratio),dH=Math.round(img.naturalHeight*ratio);
+    const xOff=M+(cW-dW)/2;
+    try{doc.addImage(document.getElementById('previewImg').src,'JPEG',xOff,y,dW,dH);}catch(e){}
+    doc.setFont('courier','normal');doc.setFontSize(6.5);doc.setTextColor(100,116,139);
+    doc.text(`${currentFile.name} · ${img.naturalWidth}x${img.naturalHeight}px · ${formatBytes(currentFile.size)}`,W/2,y+dH+5,{align:'center'});
+    y+=dH+12;
+
+    // ELA Map
+    doc.setFont('courier','bold');doc.setFontSize(8);doc.setTextColor(30,100,200);
+    doc.text('MAPPA ELA — ERROR LEVEL ANALYSIS',M,y);y+=4;
+    doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);doc.line(M,y,W-M,y);y+=4;
+    const elaDisp=document.getElementById('elaDisplay');
+    if(elaDisp.width>0){
+      try{
+        const elaDataURL=elaDisp.toDataURL('image/jpeg',0.85);
+        const elaRatio=Math.min(cW/elaDisp.width,100/elaDisp.height);
+        const eW=Math.round(elaDisp.width*elaRatio),eH=Math.round(elaDisp.height*elaRatio);
+        const eXoff=M+(cW-eW)/2;
+        doc.addImage(elaDataURL,'JPEG',eXoff,y,eW,eH);
+        y+=eH+5;
+      }catch(e){}
+    }
+    // Legenda ELA
+    doc.setFillColor(255,220,220);doc.rect(M,y,15,5,'F');
+    doc.setFont('courier','normal');doc.setFontSize(6.5);doc.setTextColor(80,80,80);
+    doc.text('Zone ad alta varianza (possibile manipolazione)',M+17,y+3.8);y+=8;
+    doc.setFillColor(210,225,255);doc.rect(M,y,15,5,'F');
+    doc.text('Zone a bassa varianza (possibile fill AI / rendering)',M+17,y+3.8);y+=12;
+
+    // SHA recap in fondo
+    doc.setFillColor(248,250,252);doc.setDrawColor(200,210,225);doc.setLineWidth(0.2);
+    doc.roundedRect(M,y,cW,16,2,2,'FD');
+    doc.setFont('courier','bold');doc.setFontSize(6.5);doc.setTextColor(100,116,139);
+    doc.text('SHA-256:',M+5,y+6);
+    doc.setFont('courier','normal');doc.setTextColor(15,23,42);
+    doc.text(fileSHA256||'n/d',M+24,y+6);
+    doc.setTextColor(100,116,139);
+    doc.text(`Analisi: ${analysisDate.toLocaleString('it-IT')}`,M+5,y+12);
+    doc.text(`Score finale: ${ens.fakeScore}% · Verdetto: ${ens.verdict}`,W-M,y+12,{align:'right'});
+
+    // Footer pag 3
+    doc.setDrawColor(200,210,225);doc.setLineWidth(0.3);doc.line(M,284,W-M,284);
+    doc.setFont('courier','normal');doc.setFontSize(6);doc.setTextColor(150,160,175);
+    doc.text('Deep Analysis v3.0 — I risultati sono probabilistici e non sostituiscono una perizia forense professionale certificata.',M,289);
+    doc.text('Pagina 3 di 3',W-M,289,{align:'right'});
+
+    const fname=`deep-analysis-${currentFile.name.replace(/\.[^.]+$/,'')}-${analysisDate.toISOString().slice(0,10)}.pdf`;
+    doc.save(fname);
+  }catch(err){
+    console.error('PDF error:',err);alert('Errore PDF: '+err.message);
   }
+  btn.disabled=false;
+  btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> PDF';
+}
 </script>
 </body>
 </html>
