@@ -27,6 +27,13 @@
   .drop-text-main{font-size:0.88rem;color:var(--text);margin-bottom:6px;}
   .drop-text-sub{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--muted);letter-spacing:1px;}
   #fileInput{display:none;}
+  /* ELA CANVAS */
+  .ela-wrap{display:none;border-radius:4px;overflow:hidden;margin-top:12px;}
+  .ela-canvas{width:100%;display:block;border-radius:4px;border:1px solid var(--border);}
+  .ela-label{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--accent3);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+  .ela-legend{display:flex;align-items:center;gap:8px;margin-top:6px;font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--muted);flex-wrap:wrap;row-gap:4px;}
+  .ela-legend-r{display:inline-block;width:14px;height:8px;background:rgba(255,62,108,0.55);border-radius:2px;flex-shrink:0;}
+  .ela-legend-b{display:inline-block;width:14px;height:8px;background:rgba(77,159,255,0.35);border-radius:2px;flex-shrink:0;margin-left:8px;}
   .preview-wrap{position:relative;width:100%;min-height:clamp(320px,40vh,500px);border-radius:4px;overflow:hidden;display:none;}
   .preview-img{width:100%;height:100%;min-height:clamp(320px,40vh,500px);object-fit:contain;background:#000;display:block;}
   .preview-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.85));padding:20px 16px 12px;}
@@ -112,6 +119,36 @@
   .pulsing{animation:pulse 1.2s ease-in-out infinite;}
   #analysisCanvas{display:none;}
   @media(max-width:900px){.main{grid-template-columns:1fr;}.bottom-grid{grid-template-columns:1fr;}}
+  /* VERDICT CIRCLE */
+  .verdict-circle{width:72px;height:72px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.5s;}
+  .verdict-circle-num{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;line-height:1;color:#fff;}
+  .verdict-circle-lbl{font-family:'Share Tech Mono',monospace;font-size:0.45rem;letter-spacing:2px;color:rgba(255,255,255,0.8);text-transform:uppercase;margin-top:1px;}
+  .verdict-box.real .verdict-circle{background:var(--accent);box-shadow:0 0 20px rgba(0,255,157,0.4);}
+  .verdict-box.fake .verdict-circle{background:var(--accent2);box-shadow:0 0 20px rgba(255,62,108,0.4);}
+  .verdict-box.uncertain .verdict-circle{background:var(--warn);box-shadow:0 0 20px rgba(246,201,14,0.4);}
+  .verdict-pct{font-family:'Share Tech Mono',monospace;font-size:0.78rem;font-weight:600;margin-bottom:2px;}
+  .verdict-box.real .verdict-pct{color:var(--accent);}
+  .verdict-box.fake .verdict-pct{color:var(--accent2);}
+  .verdict-box.uncertain .verdict-pct{color:var(--warn);}
+  /* DOUBLE CHECK BADGE */
+  .double-check{font-family:'Share Tech Mono',monospace;font-size:0.56rem;padding:3px 8px;border-radius:20px;display:inline-block;margin-top:5px;}
+  .double-check.agree{background:rgba(0,255,157,0.1);color:var(--accent);border:1px solid rgba(0,255,157,0.3);}
+  .double-check.disagree{background:rgba(246,201,14,0.1);color:var(--warn);border:1px solid rgba(246,201,14,0.3);}
+  /* BAR SCALE */
+  .bar-scale{position:relative;height:6px;border-radius:3px;overflow:hidden;margin-top:3px;background:linear-gradient(to right,#16a34a 0%,#16a34a 40%,#ca8a04 40%,#ca8a04 65%,#dc2626 65%,#dc2626 100%);}
+  .bar-scale-marker{position:absolute;top:-1px;width:3px;height:8px;background:#fff;border-radius:1px;transform:translateX(-50%);box-shadow:0 0 4px rgba(0,0,0,0.6);transition:left 1.2s cubic-bezier(0.4,0,0.2,1);}
+  .bar-scale-labels{display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:0.44rem;color:var(--muted);margin-top:2px;}
+  /* SUSPECT ZONES on image */
+  .suspect-overlay{position:absolute;inset:0;pointer-events:none;}
+  .suspect-box{position:absolute;border:2px solid;border-radius:3px;font-family:'Share Tech Mono',monospace;font-size:0.48rem;padding:2px 4px;white-space:nowrap;}
+  /* CONFIDENCE INTERVAL */
+  .ci-row{display:flex;align-items:center;gap:8px;margin-top:3px;}
+  .ci-bar{flex:1;height:4px;background:var(--border);border-radius:2px;position:relative;overflow:visible;}
+  .ci-range{position:absolute;height:100%;border-radius:2px;background:rgba(77,159,255,0.35);border:1px solid var(--accent3);}
+  .ci-point{position:absolute;top:50%;width:8px;height:8px;border-radius:50%;transform:translate(-50%,-50%);border:2px solid #fff;}
+  .ci-label{font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:var(--muted);white-space:nowrap;}
+  /* DCT module */
+  .conf-bar-wrap{margin-bottom:12px;}
   @media(max-width:600px){.action-bar{grid-template-columns:1fr auto auto;}.modules-grid{grid-template-columns:1fr 1fr;}header{flex-direction:column;align-items:flex-start;gap:8px;}.version{display:none;}.logo-title{font-size:1.8rem;}.btn-analyze span{font-size:0.62rem;letter-spacing:1px;}}
 </style>
 </head>
@@ -121,7 +158,7 @@
   <header>
     <div class="logo">
       <div class="logo-title">DEEP ANALYSIS</div>
-      <div class="logo-sub">AI Forensics Engine v2.0</div>
+      <div class="logo-sub">AI Forensics Engine v3.1</div>
     </div>
     <div class="version" id="sysStatus">SYS_READY // AWAITING INPUT</div>
   </header>
@@ -140,8 +177,20 @@
         <img id="previewImg" class="preview-img" alt="preview">
         <div class="scan-lines"></div><div class="scan-beam"></div>
         <div class="preview-overlay"><div class="preview-filename" id="previewFilename"></div></div>
+        <div class="suspect-overlay" id="suspectOverlay"></div>
       </div>
       <input type="file" id="fileInput" accept="image/*">
+
+      <!-- ELA visual map -->
+      <div class="ela-wrap" id="elaWrap">
+        <div class="ela-label">▸ Error Level Analysis — Mappa anomalie</div>
+        <canvas class="ela-canvas" id="elaDisplay"></canvas>
+        <div class="ela-legend">
+          <span class="ela-legend-r"></span>Alta varianza (possibile manipolazione)
+          <span class="ela-legend-b"></span>Bassa varianza (fill AI / rendering uniforme)
+        </div>
+      </div>
+
       <div class="action-bar">
         <button class="btn-analyze" id="btnAnalyze" disabled onclick="startAnalysis()">
           <span id="btnText">▶ AVVIA ANALISI FORENSE</span>
@@ -157,18 +206,60 @@
     <div class="right-panel">
       <div class="verdict-box" id="verdictBox">
         <div class="verdict-idle" id="verdictIdle">[ IN ATTESA DI INPUT ]</div>
-        <div id="verdictContent" style="display:none">
-          <div class="verdict-icon" id="verdictIcon"></div>
-          <div><div class="verdict-label">Verdetto Forense</div><div class="verdict-value" id="verdictValue"></div><div class="verdict-conf" id="verdictConf"></div></div>
+        <div id="verdictContent" style="display:none;width:100%">
+          <div style="display:flex;align-items:center;gap:16px;width:100%">
+            <div class="verdict-circle" id="verdictCircle">
+              <div class="verdict-circle-num" id="verdictCircleNum">--</div>
+              <div class="verdict-circle-lbl">AUTENTICITÀ</div>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div class="verdict-label">Verdetto Forense</div>
+              <div class="verdict-value" id="verdictValue"></div>
+              <div class="verdict-pct" id="verdictPct"></div>
+              <div class="verdict-conf" id="verdictConf"></div>
+              <div id="doubleCheckBadge"></div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="conf-section">
         <div class="section-title">▸ Analisi Multi-Modello</div>
-        <div class="conf-bar-wrap"><div class="conf-bar-header"><span class="conf-bar-label">CLAUDE VISION AI</span><span class="conf-bar-val" id="val1">--</span></div><div class="conf-bar-bg"><div class="conf-bar-fill fill-green" id="bar1"></div></div></div>
-        <div class="conf-bar-wrap"><div class="conf-bar-header"><span class="conf-bar-label">ERROR LEVEL ANALYSIS (ELA)</span><span class="conf-bar-val" id="val2">--</span></div><div class="conf-bar-bg"><div class="conf-bar-fill fill-red" id="bar2"></div></div></div>
-        <div class="conf-bar-wrap"><div class="conf-bar-header"><span class="conf-bar-label">METADATI & FIRMA FILE</span><span class="conf-bar-val" id="val3">--</span></div><div class="conf-bar-bg"><div class="conf-bar-fill fill-blue" id="bar3"></div></div></div>
-        <div class="conf-bar-wrap"><div class="conf-bar-header"><span class="conf-bar-label">PATTERN STATISTICI (LSB)</span><span class="conf-bar-val" id="val4">--</span></div><div class="conf-bar-bg"><div class="conf-bar-fill fill-warn" id="bar4"></div></div></div>
-        <div class="conf-bar-wrap" style="margin-bottom:0"><div class="conf-bar-header"><span class="conf-bar-label">SCORE ENSEMBLE COMBINATO</span><span class="conf-bar-val" id="val5">--</span></div><div class="conf-bar-bg"><div class="conf-bar-fill fill-green" id="bar5" style="height:6px;border-radius:3px;"></div></div></div>
+        <div class="conf-bar-wrap">
+          <div class="conf-bar-header"><span class="conf-bar-label">CLAUDE VISION AI — AFFIDABILITÀ</span><span class="conf-bar-val" id="val1">--</span></div>
+          <div class="conf-bar-bg"><div class="conf-bar-fill fill-green" id="bar1"></div></div>
+          <div class="bar-scale"><div class="bar-scale-marker" id="bar1m" style="left:0%"></div></div>
+          <div class="bar-scale-labels"><span style="color:#16a34a">ALTA AFFIDAB.</span><span style="color:#ca8a04">INCERTA</span><span style="color:#dc2626">BASSA</span></div>
+        </div>
+        <div class="conf-bar-wrap">
+          <div class="conf-bar-header"><span class="conf-bar-label">ERROR LEVEL ANALYSIS — AFFIDABILITÀ</span><span class="conf-bar-val" id="val2">--</span></div>
+          <div class="conf-bar-bg"><div class="conf-bar-fill fill-red" id="bar2"></div></div>
+          <div class="bar-scale"><div class="bar-scale-marker" id="bar2m" style="left:0%"></div></div>
+          <div class="bar-scale-labels"><span style="color:#16a34a">ALTA AFFIDAB.</span><span style="color:#ca8a04">INCERTA</span><span style="color:#dc2626">BASSA</span></div>
+        </div>
+        <div class="conf-bar-wrap">
+          <div class="conf-bar-header"><span class="conf-bar-label">METADATI & FIRMA FILE — AFFIDABILITÀ</span><span class="conf-bar-val" id="val3">--</span></div>
+          <div class="conf-bar-bg"><div class="conf-bar-fill fill-blue" id="bar3"></div></div>
+          <div class="bar-scale"><div class="bar-scale-marker" id="bar3m" style="left:0%"></div></div>
+          <div class="bar-scale-labels"><span style="color:#16a34a">ALTA AFFIDAB.</span><span style="color:#ca8a04">INCERTA</span><span style="color:#dc2626">BASSA</span></div>
+        </div>
+        <div class="conf-bar-wrap">
+          <div class="conf-bar-header"><span class="conf-bar-label">PATTERN STATISTICI (LSB) — AFFIDABILITÀ</span><span class="conf-bar-val" id="val4">--</span></div>
+          <div class="conf-bar-bg"><div class="conf-bar-fill fill-warn" id="bar4"></div></div>
+          <div class="bar-scale"><div class="bar-scale-marker" id="bar4m" style="left:0%"></div></div>
+          <div class="bar-scale-labels"><span style="color:#16a34a">ALTA AFFIDAB.</span><span style="color:#ca8a04">INCERTA</span><span style="color:#dc2626">BASSA</span></div>
+        </div>
+        <div class="conf-bar-wrap">
+          <div class="conf-bar-header"><span class="conf-bar-label">ANALISI FREQUENZE DCT — AFFIDABILITÀ</span><span class="conf-bar-val" id="val6">--</span></div>
+          <div class="conf-bar-bg"><div class="conf-bar-fill fill-blue" id="bar6"></div></div>
+          <div class="bar-scale"><div class="bar-scale-marker" id="bar6m" style="left:0%"></div></div>
+          <div class="bar-scale-labels"><span style="color:#16a34a">ALTA AFFIDAB.</span><span style="color:#ca8a04">INCERTA</span><span style="color:#dc2626">BASSA</span></div>
+        </div>
+        <div class="conf-bar-wrap" style="margin-bottom:0">
+          <div class="conf-bar-header"><span class="conf-bar-label">SCORE ENSEMBLE COMBINATO</span><span class="conf-bar-val" id="val5">--</span></div>
+          <div class="conf-bar-bg"><div class="conf-bar-fill fill-green" id="bar5" style="height:6px;border-radius:3px;"></div></div>
+          <div class="bar-scale"><div class="bar-scale-marker" id="bar5m" style="left:0%"></div></div>
+          <div class="bar-scale-labels"><span style="color:#16a34a">ALTA AFFIDAB.</span><span style="color:#ca8a04">INCERTA</span><span style="color:#dc2626">BASSA</span></div>
+        </div>
       </div>
       <div class="modules-grid">
         <div class="module" id="mod1"><div class="module-title"><div class="module-dot"></div>ARTEFATTI AI</div><div class="module-value" id="mod1v">---</div><div class="module-desc" id="mod1d">In attesa</div></div>
@@ -195,7 +286,7 @@
     <div class="log-box">
       <div class="log-header"><div class="log-dot-r"></div><div class="log-dot-y"></div><div class="log-dot-g"></div><div class="log-title">FORENSIC_LOG // STREAM</div></div>
       <div class="log-body" id="logBody">
-        <div class="log-entry visible"><span class="log-time">00:00.00</span><span class="log-type-info">SYSTEM</span><span>Deep Analysis Engine inizializzato.</span></div>
+        <div class="log-entry visible"><span class="log-time">00:00.00</span><span class="log-type-info">SYSTEM</span><span>Deep Analysis Engine v3.1 inizializzato.</span></div>
       </div>
     </div>
   </div>
@@ -264,6 +355,7 @@ function changeImage(){
   document.getElementById('btnPdf').disabled=true;
   document.getElementById('btnText').textContent='▶ AVVIA ANALISI FORENSE';
   document.getElementById('previewImg').src='';
+  document.getElementById('elaWrap').style.display='none';
   fileInput.value='';
   resetResults();
   document.getElementById('logBody').innerHTML='';
@@ -284,17 +376,24 @@ function addLog(type,msg,d=0){
 }
 
 function resetResults(){
-  ['bar1','bar2','bar3','bar4','bar5'].forEach(id=>{document.getElementById(id).style.width='0%';});
-  ['val1','val2','val3','val4','val5'].forEach(id=>{document.getElementById(id).textContent='--';});
+  ['bar1','bar2','bar3','bar4','bar5','bar6'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.width='0%';});
+  ['bar1m','bar2m','bar3m','bar4m','bar5m','bar6m'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.left='0%';});
+  ['val1','val2','val3','val4','val5','val6'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='--';});
   document.getElementById('verdictIdle').style.display='block';
   document.getElementById('verdictContent').style.display='none';
   document.getElementById('verdictBox').className='verdict-box';
+  document.getElementById('doubleCheckBadge').innerHTML='';
+  document.getElementById('suspectOverlay').innerHTML='';
   ['mod1','mod2','mod3','mod4'].forEach(id=>{const m=document.getElementById(id);m.className='module';m.querySelector('.module-value').textContent='---';m.querySelector('.module-desc').textContent='In attesa';});
   ['mFile','mSize','mRes','mCh','mExif','mMime','mAr','mEnt'].forEach(id=>{document.getElementById(id).textContent='---';});
 }
 
 function delay(ms){return new Promise(r=>setTimeout(r,ms));}
-function setBar(bId,vId,score){document.getElementById(bId).style.width=score+'%';document.getElementById(vId).textContent=score+'%';}
+function setBar(bId,vId,score){
+  const b=document.getElementById(bId);if(b)b.style.width=score+'%';
+  const v=document.getElementById(vId);if(v)v.textContent=score+'%';
+  const m=document.getElementById(bId+'m');if(m)m.style.left=score+'%';
+}
 
 async function startAnalysis(){
   if(isAnalyzing||!currentFile)return;
@@ -305,7 +404,7 @@ async function startAnalysis(){
   document.getElementById('btnText').textContent='⟳ ANALISI IN CORSO...';
   document.getElementById('sysStatus').textContent='ANALYZING // PLEASE WAIT';
   document.getElementById('previewWrap').classList.add('scanning');
-  addLog('INFO','Avvio Deep Analysis Engine v2.0...');
+  addLog('INFO','Avvio Deep Analysis Engine v3.1...');
   const img=document.getElementById('previewImg');
   updateMetadata(img);
   addLog('INFO',`Risoluzione: ${img.naturalWidth}×${img.naturalHeight}px`,200);
@@ -314,7 +413,7 @@ async function startAnalysis(){
   addLog('INFO','Connessione Claude Vision API...',400);await delay(500);
   try{
     results.vision=await analyzeWithClaudeVision();
-    setBar('bar1','val1',results.vision.fakeScore);
+    setBar('bar1','val1',100-results.vision.fakeScore);
     addLog(results.vision.fakeScore>55?'WARN':'OK',`Vision: ${results.vision.summary}`,600);
   }catch(e){
     addLog('ERR',`Vision API: ${e.message}`,600);
@@ -324,25 +423,33 @@ async function startAnalysis(){
 
   addLog('INFO','Error Level Analysis...',1000);await delay(700);
   results.ela=analyzeELA(currentImageData,img.naturalWidth,img.naturalHeight);
-  setBar('bar2','val2',results.ela.score);
+  renderELAMap(currentImageData,img.naturalWidth,img.naturalHeight);
+  setBar('bar2','val2',100-results.ela.score);
   addLog(results.ela.anomaly?'WARN':'OK',`ELA: ${results.ela.anomaly?'Incoerenze rilevate':'Coerenza uniforme'}`,1200);
 
   addLog('INFO','Analisi metadati...',1400);await delay(500);
   results.exif=analyzeFileSignature(currentFile,img);
-  setBar('bar3','val3',results.exif.score);
+  setBar('bar3','val3',100-results.exif.score);
   addLog(results.exif.anomaly?'WARN':'OK',`EXIF: ${results.exif.msg}`,1600);
 
   addLog('INFO','Pattern statistici LSB...',1800);await delay(600);
   results.lsb=analyzeLSB(currentImageData);
-  setBar('bar4','val4',results.lsb.score);
+  setBar('bar4','val4',100-results.lsb.score);
   addLog(results.lsb.anomaly?'WARN':'OK',`LSB: ${results.lsb.msg}`,2000);
 
-  addLog('INFO','Calcolo ensemble pesato...',2200);await delay(400);
-  results.ensemble=computeEnsemble(results);
-  setBar('bar5','val5',results.ensemble.fakeScore);
-  addLog(results.ensemble.fakeScore>60?'ERR':'OK',`ENSEMBLE: ${results.ensemble.fakeScore}% probabilità AI`,2400);
+  addLog('INFO','Analisi frequenze DCT...',2200);await delay(500);
+  results.dct=analyzeDCT(currentImageData,img.naturalWidth,img.naturalHeight);
+  setBar('bar6','val6',100-results.dct.score);
+  addLog(results.dct.anomaly?'WARN':'OK',`DCT: ${results.dct.msg}`,2400);
 
-  await delay(2600);updateModules(results);
+  addLog('INFO','Calcolo ensemble pesato...',2600);await delay(400);
+  results.ensemble=computeEnsemble(results);
+  setBar('bar5','val5',100-results.ensemble.fakeScore);
+  addLog(results.ensemble.fakeScore>60?'ERR':'OK',`ENSEMBLE: ${results.ensemble.fakeScore}% probabilità AI`,2800);
+
+  renderSuspectZones(results.vision,img.naturalWidth,img.naturalHeight);
+
+  await delay(3000);updateModules(results);
   await delay(500);showVerdict(results.ensemble,results.vision);
 
   lastResults=results;
@@ -358,7 +465,24 @@ async function startAnalysis(){
 
 async function analyzeWithClaudeVision(){
   const mime=currentFile.type||'image/jpeg';
-  const response=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imageBase64:currentBase64,mimeType:mime})});
+  const prompt=`Sei un esperto forense specializzato nel rilevamento di immagini generate da AI e manipolate digitalmente.
+Rispondi SOLO con JSON valido, nessun testo extra:
+{
+  "fakeScore": <0-100>,
+  "verdict": "<AUTENTICA|ARTIFICIALE|INCERTA>",
+  "confidence": "<alta|media|bassa>",
+  "summary": "<max 80 caratteri>",
+  "findings": ["<obs 1>","<obs 2>","<obs 3>","<obs 4>"],
+  "aiGenerator": "<generatore o 'nessuno'>",
+  "manipulationType": "<tipo o 'nessuna'>",
+  "keyIndicators": {"texture":"<naturale|sintetica|ibrida>","lighting":"<coerente|incoerente|artificiale>","edges":"<naturali|artificiali|sovra-nitidi>","noise":"<assente|naturale|artificiale>","anatomy":"<corretta|anomalie rilevate|non applicabile>"},
+  "suspectZones": [{"x":<0-1>,"y":<0-1>,"w":<0-1>,"h":<0-1>,"label":"<breve etichetta>"}]
+}
+CALIBRAZIONE fakeScore: 0-20=chiaramente reale, 21-40=probabilmente reale, 41-60=ambigua, 61-80=probabilmente AI, 81-100=quasi certamente AI.
+Segnali forti AI: pelle iperlevigata, capelli pattern ripetuto, occhi simmetrici irrealistici, luce troppo uniforme, sfondi incoerenti, dita distorte, testo illeggibile, assenza aberrazione cromatica, rumore assente.
+In suspectZones indica le 1-3 zone più sospette con coordinate normalizzate 0-1 rispetto all'immagine. Se l'immagine è autentica, suspectZones=[].
+In caso di dubbio, preferisci fakeScore più alto piuttosto che più basso.`;
+  const response=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imageBase64:currentBase64,mimeType:mime,prompt})});
   if(!response.ok){const err=await response.json().catch(()=>({}));throw new Error(err.error||`HTTP ${response.status}`);}
   return await response.json();
 }
@@ -375,6 +499,125 @@ function analyzeELA(imgData,w,h){
   return{score:Math.max(5,Math.min(90,score)),anomaly:score>50};
 }
 
+function renderELAMap(imgData,w,h){
+  const blockSize=16;
+  const disp=document.getElementById('elaDisplay');
+  disp.width=w;disp.height=h;
+  const ctx=disp.getContext('2d');
+  ctx.drawImage(document.getElementById('previewImg'),0,0);
+  const data=imgData.data;
+  for(let by=0;by<h-blockSize;by+=blockSize){
+    for(let bx=0;bx<w-blockSize;bx+=blockSize){
+      let sum=0,sum2=0,count=0;
+      for(let dy=0;dy<blockSize;dy++)for(let dx=0;dx<blockSize;dx++){
+        const idx=((by+dy)*w+(bx+dx))*4;
+        const lum=0.299*data[idx]+0.587*data[idx+1]+0.114*data[idx+2];
+        sum+=lum;sum2+=lum*lum;count++;
+      }
+      const mean=sum/count;const variance=(sum2/count)-mean*mean;
+      if(variance>800){
+        const intensity=Math.min(1,(variance-800)/3000);
+        ctx.fillStyle=`rgba(255,62,108,${intensity*0.55})`;
+        ctx.fillRect(bx,by,blockSize,blockSize);
+      }else if(variance<3){
+        ctx.fillStyle='rgba(77,159,255,0.35)';
+        ctx.fillRect(bx,by,blockSize,blockSize);
+      }
+    }
+  }
+  document.getElementById('elaWrap').style.display='block';
+}
+
+// ── DCT FREQUENCY ANALYSIS ─────────────────────────────────────────────
+function analyzeDCT(imgData,w,h){
+  const data=imgData.data;
+  const blockSize=8;
+  let acEnergy=0,dcEnergy=0,blocks=0;
+  const cos=[];
+  for(let i=0;i<8;i++){cos.push([]);for(let j=0;j<8;j++)cos[i].push(Math.cos((2*j+1)*i*Math.PI/16));}
+  for(let by=0;by<=h-blockSize;by+=blockSize){
+    for(let bx=0;bx<=w-blockSize;bx+=blockSize){
+      const block=[];
+      for(let y=0;y<8;y++){block.push([]);for(let x=0;x<8;x++){const idx=((by+y)*w+(bx+x))*4;block[y].push(0.299*data[idx]+0.587*data[idx+1]+0.114*data[idx+2]-128);}}
+      let dc=0,ac=0;
+      for(let u=0;u<8;u++)for(let v=0;v<8;v++){
+        const cu=u===0?1/Math.sqrt(2):1,cv=v===0?1/Math.sqrt(2):1;
+        let s=0;
+        for(let y=0;y<8;y++)for(let x=0;x<8;x++)s+=block[y][x]*cos[u][y]*cos[v][x];
+        const c=(cu*cv/4)*s;
+        if(u===0&&v===0)dc+=c*c;else ac+=c*c;
+      }
+      dcEnergy+=dc;acEnergy+=ac;blocks++;
+    }
+  }
+  if(!blocks)return{score:30,anomaly:false,msg:'DCT non calcolabile'};
+  const ratio=acEnergy/(dcEnergy+1);
+  // AI images tend to have unnaturally low AC/DC ratio (over-smooth) or unusual distribution
+  let score=20;
+  if(ratio<80)score+=25;      // too smooth — AI fill
+  else if(ratio<150)score+=12;
+  if(ratio>2000)score+=20;    // too noisy — heavy manipulation
+  const anomaly=score>45;
+  return{score:Math.max(5,Math.min(85,score)),anomaly,msg:anomaly?`Distribuzione frequenze anomala (AC/DC: ${ratio.toFixed(0)})`:`Distribuzione frequenze nella norma (AC/DC: ${ratio.toFixed(0)})`};
+}
+
+// ── FINGERPRINT RISOLUZIONI AI ESTESO (50+) ────────────────────────────
+const AI_RESOLUTIONS=[
+  // Midjourney v5/v6
+  [1024,1024],[1024,1792],[1792,1024],[1280,720],[720,1280],[896,1152],[1152,896],
+  [1456,816],[816,1456],[1232,928],[928,1232],[1344,768],[768,1344],
+  // Stable Diffusion 1.5/2.1
+  [512,512],[768,512],[512,768],[768,768],[640,480],[480,640],
+  [512,384],[384,512],[704,512],[512,704],[640,640],
+  // SDXL
+  [1024,1024],[1152,896],[896,1152],[1216,832],[832,1216],
+  [1344,768],[768,1344],[1536,640],[640,1536],[1024,576],[576,1024],
+  // Flux.1
+  [1024,1024],[832,1216],[1216,832],[1344,768],[768,1344],[1024,576],[576,1024],
+  [864,1152],[1152,864],[1280,800],[800,1280],
+  // DALL-E 3
+  [1024,1024],[1792,1024],[1024,1792],[1024,768],[768,1024],
+  // Adobe Firefly
+  [2304,1536],[1536,2304],[2048,2048],[1408,1408],[2048,1152],[1152,2048],
+  // Bing/Designer (same as DALL-E 3)
+  // Stable Cascade
+  [1024,1024],[2048,2048],[1024,2048],[2048,1024],
+  // Upscaled (2x common bases)
+  [2048,2048],[2048,3584],[3584,2048],[2048,1536],[1536,2048],
+];
+
+// ── SUSPECT ZONE RENDERING ────────────────────────────────────────────
+function renderSuspectZones(vision,w,h){
+  const overlay=document.getElementById('suspectOverlay');
+  overlay.innerHTML='';
+  if(!vision||!vision.suspectZones||!vision.suspectZones.length)return;
+  const wrap=document.getElementById('previewWrap');
+  const dispW=wrap.offsetWidth||300,dispH=wrap.offsetHeight||300;
+  const scaleX=dispW/w,scaleY=dispH/h;
+  vision.suspectZones.forEach((z,i)=>{
+    const colors=['rgba(255,62,108,0.7)','rgba(246,201,14,0.7)','rgba(77,159,255,0.7)'];
+    const c=colors[i%colors.length];
+    const box=document.createElement('div');
+    box.className='suspect-box';
+    // z: {x:0-1, y:0-1, w:0-1, h:0-1, label}
+    const px=Math.round(z.x*dispW),py=Math.round(z.y*dispH);
+    const pw=Math.round(z.w*dispW),ph=Math.round(z.h*dispH);
+    box.style.cssText=`left:${px}px;top:${py}px;width:${pw}px;height:${ph}px;border-color:${c};color:${c};background:${c.replace('0.7','0.1')};font-size:0.44rem;`;
+    box.textContent=z.label||`ZONA ${i+1}`;
+    overlay.appendChild(box);
+  });
+}
+
+// ── CONFIDENCE INTERVAL ───────────────────────────────────────────────
+function computeConfidenceInterval(ensemble,vision){
+  // Interval based on: vision confidence level + distance from thresholds
+  const fs=ensemble.fakeScore;
+  const confMap={'alta':5,'media':12,'bassa':20};
+  const margin=confMap[vision.confidence||'media']||12;
+  const lo=Math.max(0,fs-margin),hi=Math.min(100,fs+margin);
+  return{lo,hi,center:fs,margin};
+}
+
 function analyzeFileSignature(file,img){
   const ext=file.name.split('.').pop().toLowerCase(),mime=file.type;
   let score=15,anomaly=false,msg='Metadati nella norma';
@@ -382,7 +625,7 @@ function analyzeFileSignature(file,img){
   if(mimeMap[ext]&&mimeMap[ext]!==mime){score+=30;anomaly=true;msg='Mismatch estensione/MIME';}
   const mp=(img.naturalWidth*img.naturalHeight)/1e6;
   if(file.size/(mp*300*1024)<0.12&&mime==='image/jpeg'){score+=20;msg='File size anomalo per risoluzione';}
-  const aiRes=[[512,512],[768,768],[1024,1024],[512,768],[768,512],[1024,768],[768,1024],[832,1216],[1216,832],[1344,768],[768,1344]];
+  const aiRes=AI_RESOLUTIONS;
   if(aiRes.some(([aw,ah])=>img.naturalWidth===aw&&img.naturalHeight===ah)){score+=25;anomaly=true;msg=`Risoluzione ${img.naturalWidth}x${img.naturalHeight} tipica AI`;}
   if(mime==='image/png'&&mp>2)score+=8;
   return{score:Math.max(5,Math.min(90,Math.round(score))),anomaly,msg};
@@ -401,12 +644,13 @@ function analyzeLSB(imgData){
 }
 
 function computeEnsemble(results){
-  const fs=Math.round(results.vision.fakeScore*0.60+results.ela.score*0.15+results.exif.score*0.13+results.lsb.score*0.12);
+  const dctScore=results.dct?results.dct.score:30;
+  const fs=Math.round(results.vision.fakeScore*0.52+results.ela.score*0.14+results.exif.score*0.12+results.lsb.score*0.11+dctScore*0.11);
   let verdict,confidence,cls;
   if(fs>=65){verdict='PROBABILMENTE ARTIFICIALE';cls='fake';confidence=`${fs}% probabilità AI/manipolazione`;}
   else if(fs>=40){verdict='INCERTA / AMBIGUA';cls='uncertain';confidence=`Evidenze non conclusive (score: ${fs}%)`;}
   else{verdict='PROBABILMENTE AUTENTICA';cls='real';confidence=`${100-fs}% probabilità di autenticità`;}
-  return{fakeScore:fs,verdict,confidence,cls};
+  return{fakeScore:fs,verdict,confidence,cls,authPct:100-fs};
 }
 
 function updateMetadata(img){
@@ -448,12 +692,22 @@ function setModule(mId,vId,dId,value,alertClass,desc){
 
 function showVerdict(ensemble,vision){
   document.getElementById('verdictIdle').style.display='none';
-  const vc=document.getElementById('verdictContent');vc.style.display='flex';vc.style.alignItems='center';vc.style.gap='20px';vc.style.width='100%';
-  document.getElementById('verdictIcon').textContent={real:'✓',fake:'⚠',uncertain:'?'}[ensemble.cls]||'?';
-  document.getElementById('verdictValue').textContent=ensemble.verdict;
-  let conf=ensemble.confidence;if(vision&&vision.findings&&vision.findings.length>0)conf+=' · '+vision.findings[0];
-  document.getElementById('verdictConf').textContent=conf;
+  document.getElementById('verdictContent').style.display='block';
   document.getElementById('verdictBox').className=`verdict-box ${ensemble.cls}`;
+  // Circle
+  document.getElementById('verdictCircleNum').textContent=ensemble.authPct+'%';
+  // Title + pct
+  document.getElementById('verdictValue').textContent=ensemble.verdict;
+  document.getElementById('verdictPct').textContent=`${ensemble.authPct}% probabilità di autenticità`;
+  // Confidence interval
+  const ci=computeConfidenceInterval(ensemble,vision);
+  document.getElementById('verdictConf').textContent=`Intervallo di confidenza: ${100-ci.hi}–${100-ci.lo}% autenticità`;
+  // Findings
+  // Double-check badge (single pass for now, will show confidence level)
+  const confLvl=vision.confidence||'media';
+  const confIcon=confLvl==='alta'?'✓':confLvl==='bassa'?'⚠':'~';
+  const badge=document.getElementById('doubleCheckBadge');
+  badge.innerHTML=`<span class="double-check ${confLvl==='alta'?'agree':'disagree'}">${confIcon} Confidenza analisi: ${confLvl.toUpperCase()}</span>`;
 }
 
 // ─── PDF REPORT ─────────────────────────────────────────────────────────
@@ -509,15 +763,16 @@ async function downloadPDF(){
     const vc2=vColors[ens.cls]||[100,116,139];
     doc.setFillColor(248,250,252);doc.setDrawColor(...vc2);doc.setLineWidth(0.6);doc.roundedRect(M,y,cW,22,2,2,'FD');
     doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(...vc2);doc.text(ens.verdict,M+8,y+10);
-    doc.setFont('courier','normal');doc.setFontSize(7);doc.setTextColor(100,116,139);doc.text(ens.confidence,M+8,y+17);
+    doc.setFont('courier','normal');doc.setFontSize(7);doc.setTextColor(100,116,139);doc.text(`${100-ens.fakeScore}% probabilità di autenticità`,M+8,y+17);
     doc.setFillColor(...vc2);doc.circle(W-M-12,y+11,8,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(255,255,255);doc.text(`${ens.fakeScore}%`,W-M-12,y+13.5,{align:'center'});
-    doc.setFont('courier','normal');doc.setFontSize(6);doc.setTextColor(100,116,139);doc.text('SCORE',W-M-12,y+19.5,{align:'center'});
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(255,255,255);doc.text(`${100-ens.fakeScore}%`,W-M-12,y+13.5,{align:'center'});
+    doc.setFont('courier','normal');doc.setFontSize(6);doc.setTextColor(100,116,139);doc.text('AUTENT.',W-M-12,y+19.5,{align:'center'});
     y+=28;
 
     // SCORE MODULI
     sectionTitle('▸ ANALISI MULTI-MODELLO');
-    const bars=[['Claude Vision AI',lastResults.vision.fakeScore,[0,180,100]],['Error Level Analysis',lastResults.ela.score,[220,38,38]],['Metadati & EXIF',lastResults.exif.score,[30,100,200]],['Pattern LSB',lastResults.lsb.score,[180,140,0]],['Score Ensemble',ens.fakeScore,[0,180,100]]];
+    const dctS=lastResults.dct?lastResults.dct.score:30;
+    const bars=[['Claude Vision AI — Affidabilità',100-lastResults.vision.fakeScore,[0,180,100]],['Error Level Analysis — Affidabilità',100-lastResults.ela.score,[220,38,38]],['Metadati & EXIF — Affidabilità',100-lastResults.exif.score,[30,100,200]],['Pattern LSB — Affidabilità',100-lastResults.lsb.score,[180,140,0]],['Frequenze DCT — Affidabilità',100-dctS,[30,100,200]],['Score Ensemble',100-ens.fakeScore,[0,180,100]]];
     for(const[label,score,color]of bars){checkSpace(10);doc.setTextColor(15,23,42);doc.setFontSize(7);doc.text(label,M,y);doc.setTextColor(100,116,139);doc.text(`${score}%`,W-M,y,{align:'right'});doc.setFillColor(226,232,240);doc.roundedRect(M,y+2,cW,3,1,1,'F');doc.setFillColor(...color);doc.roundedRect(M,y+2,(cW*score/100),3,1,1,'F');y+=9;}
     y+=3;
 
