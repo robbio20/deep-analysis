@@ -645,12 +645,16 @@ function analyzeLSB(imgData){
 
 function computeEnsemble(results){
   const dctScore=results.dct?results.dct.score:30;
-  const fs=Math.round(results.vision.fakeScore*0.62+results.ela.score*0.11+results.exif.score*0.10+results.lsb.score*0.09+dctScore*0.08);
+  const fs=Math.round(results.vision.fakeScore*0.45+results.ela.score*0.14+results.exif.score*0.14+results.lsb.score*0.13+dctScore*0.14);
   let verdict,confidence,cls;
-  if(fs>=55){verdict='PROBABILMENTE ARTIFICIALE';cls='fake';confidence=`${fs}% probabilità AI/manipolazione`;}
-  else if(fs>=30){verdict='INCERTA / AMBIGUA';cls='uncertain';confidence=`Evidenze non conclusive (score: ${fs}%)`;}
+  // Veto tecnico: se 2+ moduli tecnici anomali, verdetto minimo INCERTA
+  const techAnomalies=[results.ela.anomaly,results.exif.anomaly,results.lsb.anomaly,results.dct?results.dct.anomaly:false].filter(Boolean).length;
+  const vetoActive=techAnomalies>=2;
+  let verdict,confidence,cls;
+  if(fs>=45||(vetoActive&&fs>=35)){verdict='PROBABILMENTE ARTIFICIALE';cls='fake';confidence=`${fs}% probabilità AI/manipolazione`;}
+  else if(fs>=25||vetoActive){verdict='INCERTA / AMBIGUA';cls='uncertain';confidence=`Evidenze non conclusive (score: ${fs}%) ${vetoActive?'· Veto tecnico attivo':''}`;}
   else{verdict='PROBABILMENTE AUTENTICA';cls='real';confidence=`${100-fs}% probabilità di autenticità`;}
-  return{fakeScore:fs,verdict,confidence,cls,authPct:100-fs};
+  return{fakeScore:fs,verdict,confidence,cls,authPct:100-fs,vetoActive,techAnomalies};
 }
 
 function updateMetadata(img){
@@ -707,7 +711,8 @@ function showVerdict(ensemble,vision){
   const confLvl=vision.confidence||'media';
   const confIcon=confLvl==='alta'?'✓':confLvl==='bassa'?'⚠':'~';
   const badge=document.getElementById('doubleCheckBadge');
-  badge.innerHTML=`<span class="double-check ${confLvl==='alta'?'agree':'disagree'}">${confIcon} Confidenza analisi: ${confLvl.toUpperCase()}</span>`;
+  const vetoHtml=ensemble.vetoActive?`<span class="double-check disagree" style="margin-left:6px">⚡ Veto tecnico: ${ensemble.techAnomalies} moduli anomali</span>`:'';
+  badge.innerHTML=`<span class="double-check ${confLvl==='alta'?'agree':'disagree'}">${confIcon} Confidenza analisi: ${confLvl.toUpperCase()}</span>${vetoHtml}`;
 }
 
 // ─── PDF REPORT ─────────────────────────────────────────────────────────
