@@ -302,9 +302,18 @@ const dropZone=document.getElementById('dropZone');
 const fileInput=document.getElementById('fileInput');
 
 // Blocca apertura file nel browser a livello document
-// Blocca apertura file a livello document
-document.addEventListener('dragover',e=>e.preventDefault());
-document.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();});
+// Blocca il browser dall'aprire file trascinati ovunque nella pagina
+window.addEventListener('dragenter',e=>e.preventDefault());
+window.addEventListener('dragover',e=>e.preventDefault());
+window.addEventListener('drop',e=>{
+  e.preventDefault();
+  // Se il drop è sul dropzone o suoi figli, gestiscilo
+  if(dropZone.contains(e.target)||e.target===dropZone){
+    dropZone.classList.remove('dragging');
+    const f=e.dataTransfer.files[0];
+    if(f&&f.type.startsWith('image/'))loadFile(f);
+  }
+});
 
 // Click sul dropzone apre il file picker
 dropZone.addEventListener('click',e=>{
@@ -313,15 +322,10 @@ dropZone.addEventListener('click',e=>{
   fileInput.click();
 });
 
-// Drag & drop sul dropZone
+// Drag & drop visuale sul dropZone
 dropZone.addEventListener('dragover',e=>{e.preventDefault();e.stopPropagation();dropZone.classList.add('dragging');});
 dropZone.addEventListener('dragleave',e=>{if(!dropZone.contains(e.relatedTarget))dropZone.classList.remove('dragging');});
-dropZone.addEventListener('drop',e=>{
-  e.preventDefault();e.stopPropagation();
-  dropZone.classList.remove('dragging');
-  const f=e.dataTransfer.files[0];
-  if(f&&f.type.startsWith('image/'))loadFile(f);
-});
+dropZone.addEventListener('drop',e=>{e.stopPropagation();});
 fileInput.addEventListener('change',e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
 
 function loadFile(file){
