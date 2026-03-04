@@ -666,7 +666,6 @@ function analyzeLSB(imgData){
 function computeEnsemble(results){
   const dctScore=results.dct?results.dct.score:30;
   const fs=Math.round(results.vision.fakeScore*0.45+results.ela.score*0.14+results.exif.score*0.14+results.lsb.score*0.13+dctScore*0.14);
-  let verdict,confidence,cls;
   // Veto tecnico: se 2+ moduli tecnici anomali, verdetto minimo INCERTA
   const techAnomalies=[results.ela.anomaly,results.exif.anomaly,results.lsb.anomaly,results.dct?results.dct.anomaly:false].filter(Boolean).length;
   const vetoActive=techAnomalies>=2;
