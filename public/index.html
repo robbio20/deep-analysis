@@ -135,7 +135,7 @@
   .double-check.agree{background:rgba(0,255,157,0.1);color:var(--accent);border:1px solid rgba(0,255,157,0.3);}
   .double-check.disagree{background:rgba(246,201,14,0.1);color:var(--warn);border:1px solid rgba(246,201,14,0.3);}
   /* BAR SCALE */
-  .bar-scale{position:relative;height:6px;border-radius:3px;overflow:hidden;margin-top:3px;background:linear-gradient(to right,#16a34a 0%,#16a34a 40%,#ca8a04 40%,#ca8a04 65%,#dc2626 65%,#dc2626 100%);}
+  .bar-scale{position:relative;height:6px;border-radius:3px;overflow:hidden;margin-top:3px;background:linear-gradient(to right,#dc2626 0%,#dc2626 35%,#ca8a04 35%,#ca8a04 60%,#16a34a 60%,#16a34a 100%);}
   .bar-scale-marker{position:absolute;top:-1px;width:3px;height:8px;background:#fff;border-radius:1px;transform:translateX(-50%);box-shadow:0 0 4px rgba(0,0,0,0.6);transition:left 1.2s cubic-bezier(0.4,0,0.2,1);}
   .bar-scale-labels{display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:0.44rem;color:var(--muted);margin-top:2px;}
   /* SUSPECT ZONES on image */
@@ -228,37 +228,37 @@
           <div class="conf-bar-header"><span class="conf-bar-label">CLAUDE VISION AI — AFFIDABILITÀ</span><span class="conf-bar-val" id="val1">--</span></div>
           <div class="conf-bar-bg"><div class="conf-bar-fill fill-green" id="bar1"></div></div>
           <div class="bar-scale"><div class="bar-scale-marker" id="bar1m" style="left:0%"></div></div>
-          <div class="bar-scale-labels"><span style="color:#16a34a">ALTA AFFIDAB.</span><span style="color:#ca8a04">INCERTA</span><span style="color:#dc2626">BASSA</span></div>
+          <div class="bar-scale-labels"><span style="color:#dc2626">BASSA AFFIDABILITÀ</span><span style="color:#ca8a04">INCERTA</span><span style="color:#16a34a">ALTA AFFIDABILITÀ</span></div>
         </div>
         <div class="conf-bar-wrap">
           <div class="conf-bar-header"><span class="conf-bar-label">ERROR LEVEL ANALYSIS — AFFIDABILITÀ</span><span class="conf-bar-val" id="val2">--</span></div>
           <div class="conf-bar-bg"><div class="conf-bar-fill fill-red" id="bar2"></div></div>
           <div class="bar-scale"><div class="bar-scale-marker" id="bar2m" style="left:0%"></div></div>
-          <div class="bar-scale-labels"><span style="color:#16a34a">ALTA AFFIDAB.</span><span style="color:#ca8a04">INCERTA</span><span style="color:#dc2626">BASSA</span></div>
+          <div class="bar-scale-labels"><span style="color:#dc2626">BASSA AFFIDABILITÀ</span><span style="color:#ca8a04">INCERTA</span><span style="color:#16a34a">ALTA AFFIDABILITÀ</span></div>
         </div>
         <div class="conf-bar-wrap">
           <div class="conf-bar-header"><span class="conf-bar-label">METADATI & FIRMA FILE — AFFIDABILITÀ</span><span class="conf-bar-val" id="val3">--</span></div>
           <div class="conf-bar-bg"><div class="conf-bar-fill fill-blue" id="bar3"></div></div>
           <div class="bar-scale"><div class="bar-scale-marker" id="bar3m" style="left:0%"></div></div>
-          <div class="bar-scale-labels"><span style="color:#16a34a">ALTA AFFIDAB.</span><span style="color:#ca8a04">INCERTA</span><span style="color:#dc2626">BASSA</span></div>
+          <div class="bar-scale-labels"><span style="color:#dc2626">BASSA AFFIDABILITÀ</span><span style="color:#ca8a04">INCERTA</span><span style="color:#16a34a">ALTA AFFIDABILITÀ</span></div>
         </div>
         <div class="conf-bar-wrap">
           <div class="conf-bar-header"><span class="conf-bar-label">PATTERN STATISTICI (LSB) — AFFIDABILITÀ</span><span class="conf-bar-val" id="val4">--</span></div>
           <div class="conf-bar-bg"><div class="conf-bar-fill fill-warn" id="bar4"></div></div>
           <div class="bar-scale"><div class="bar-scale-marker" id="bar4m" style="left:0%"></div></div>
-          <div class="bar-scale-labels"><span style="color:#16a34a">ALTA AFFIDAB.</span><span style="color:#ca8a04">INCERTA</span><span style="color:#dc2626">BASSA</span></div>
+          <div class="bar-scale-labels"><span style="color:#dc2626">BASSA AFFIDABILITÀ</span><span style="color:#ca8a04">INCERTA</span><span style="color:#16a34a">ALTA AFFIDABILITÀ</span></div>
         </div>
         <div class="conf-bar-wrap">
           <div class="conf-bar-header"><span class="conf-bar-label">ANALISI FREQUENZE DCT — AFFIDABILITÀ</span><span class="conf-bar-val" id="val6">--</span></div>
           <div class="conf-bar-bg"><div class="conf-bar-fill fill-blue" id="bar6"></div></div>
           <div class="bar-scale"><div class="bar-scale-marker" id="bar6m" style="left:0%"></div></div>
-          <div class="bar-scale-labels"><span style="color:#16a34a">ALTA AFFIDAB.</span><span style="color:#ca8a04">INCERTA</span><span style="color:#dc2626">BASSA</span></div>
+          <div class="bar-scale-labels"><span style="color:#dc2626">BASSA AFFIDABILITÀ</span><span style="color:#ca8a04">INCERTA</span><span style="color:#16a34a">ALTA AFFIDABILITÀ</span></div>
         </div>
         <div class="conf-bar-wrap" style="margin-bottom:0">
           <div class="conf-bar-header"><span class="conf-bar-label">SCORE ENSEMBLE COMBINATO</span><span class="conf-bar-val" id="val5">--</span></div>
           <div class="conf-bar-bg"><div class="conf-bar-fill fill-green" id="bar5" style="height:6px;border-radius:3px;"></div></div>
           <div class="bar-scale"><div class="bar-scale-marker" id="bar5m" style="left:0%"></div></div>
-          <div class="bar-scale-labels"><span style="color:#16a34a">ALTA AFFIDAB.</span><span style="color:#ca8a04">INCERTA</span><span style="color:#dc2626">BASSA</span></div>
+          <div class="bar-scale-labels"><span style="color:#dc2626">BASSA AFFIDABILITÀ</span><span style="color:#ca8a04">INCERTA</span><span style="color:#16a34a">ALTA AFFIDABILITÀ</span></div>
         </div>
       </div>
       <div class="modules-grid">
@@ -645,10 +645,10 @@ function analyzeLSB(imgData){
 
 function computeEnsemble(results){
   const dctScore=results.dct?results.dct.score:30;
-  const fs=Math.round(results.vision.fakeScore*0.52+results.ela.score*0.14+results.exif.score*0.12+results.lsb.score*0.11+dctScore*0.11);
+  const fs=Math.round(results.vision.fakeScore*0.62+results.ela.score*0.11+results.exif.score*0.10+results.lsb.score*0.09+dctScore*0.08);
   let verdict,confidence,cls;
-  if(fs>=65){verdict='PROBABILMENTE ARTIFICIALE';cls='fake';confidence=`${fs}% probabilità AI/manipolazione`;}
-  else if(fs>=40){verdict='INCERTA / AMBIGUA';cls='uncertain';confidence=`Evidenze non conclusive (score: ${fs}%)`;}
+  if(fs>=55){verdict='PROBABILMENTE ARTIFICIALE';cls='fake';confidence=`${fs}% probabilità AI/manipolazione`;}
+  else if(fs>=30){verdict='INCERTA / AMBIGUA';cls='uncertain';confidence=`Evidenze non conclusive (score: ${fs}%)`;}
   else{verdict='PROBABILMENTE AUTENTICA';cls='real';confidence=`${100-fs}% probabilità di autenticità`;}
   return{fakeScore:fs,verdict,confidence,cls,authPct:100-fs};
 }
